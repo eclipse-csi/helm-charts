@@ -1,2 +1,26 @@
 # helm-charts
-This repository contains the helm-charts source from Eclipse Foundation Security Infrastructure projects.
+
+Eclipse CSI helm charts
+
+## Usage
+
+[Helm](https://helm.sh) must be installed to use the charts.  Please refer to
+Helm's [documentation](https://helm.sh/docs) to get started.
+
+Once Helm has been set up correctly, add the repo as follows:
+
+```bash
+helm repo add eclipse-csi  https://eclipse-csi.github.io/helm-charts
+```
+
+If you had already added this repo earlier, run `helm repo update` to retrieve
+the latest versions of the packages.  You can then run `helm search repo
+in-toto` to see the charts.
+
+## Charts
+
+You can search all eclipse-csi charts using following command:
+
+```bash
+helm search repo eclipse-csi
+```
