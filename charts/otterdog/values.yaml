@@ -18,7 +18,7 @@ replicaCount: 1
 image:
   repository: ghcr.io/eclipse-csi/otterdog
   pullPolicy: IfNotPresent
-  tag: "1.0.2"
+  tag: "1.0.3"
 
 ## @param imagePullSecrets  image pull secrets
 imagePullSecrets: []
