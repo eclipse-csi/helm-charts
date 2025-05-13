@@ -17,11 +17,11 @@ version: 1.0.3
 appVersion: "1.0.3"
 dependencies:
   - name: mongodb
-    version: 16.5.6
+    version: 16.5.7
     repository: "https://charts.bitnami.com/bitnami"
     condition: mongodb.enabled
   - name: valkey
-    version: 3.0.4
+    version: 3.0.5
     repository: "https://charts.bitnami.com/bitnami"
     condition: valkey.enabled
   - name: ghproxy
