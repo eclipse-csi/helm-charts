@@ -21,7 +21,7 @@ dependencies:
     repository: "https://charts.bitnami.com/bitnami"
     condition: mongodb.enabled
   - name: valkey
-    version: 3.0.10
+    version: 3.0.9
     repository: "https://charts.bitnami.com/bitnami"
     condition: valkey.enabled
   - name: ghproxy
