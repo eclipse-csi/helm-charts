@@ -19,6 +19,6 @@ updates:
       prefix: "deps-helm"
       include: "scope"
     groups:
-      github-actions:
+      otterdog-helm-deps:
         patterns:
           - "*"
