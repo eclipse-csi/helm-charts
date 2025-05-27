@@ -25,6 +25,6 @@ dependencies:
     repository: "https://charts.bitnami.com/bitnami"
     condition: valkey.enabled
   - name: ghproxy
-    version: 0.1.0
+    version: 0.2.0
     repository: "https://eclipse-csi.github.io/helm-charts"
     condition: ghproxy.enabled

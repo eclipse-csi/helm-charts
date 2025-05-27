@@ -1,0 +1,31 @@
+#
+#  *******************************************************************************
+#  Copyright (c) 2024 Eclipse Foundation and others.
+#  This program and the accompanying materials are made available
+#  under the terms of the Eclipse Public License 2.0
+#  which is available at http://www.eclipse.org/legal/epl-v20.html
+#  SPDX-License-Identifier: EPL-2.0
+#  *******************************************************************************
+#
+replicaCount: 1
+
+config:
+  debug: true
+  configOwner: "otterdog-kairoaraujo"
+  configRepo: ".otterdog"
+  configPath: ""
+  configToken: "Z2hwX2Zha2UtdG9rZW4="
+  dependecyTrackUrl: "https://sbom.eclipse.org"
+  dependecyTrackToken: "dG9rZW4xMjM="
+github:
+  adminTeams: "otterdog-admins"
+  webhookSecret: "dG9rZW4xMjM="
+  appId: "1209693"
+  appPrivateKey: "YWJjZGVmMDEyMzQ1Njc4OQ=="
+mongodb:
+  global: 
+    security: 
+      allowInsecureImages: true
+  image:
+    repository: dlavrenuek/bitnami-mongodb-arm
+    tag: 8.0.4
