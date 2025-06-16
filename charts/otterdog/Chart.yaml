@@ -13,7 +13,7 @@ description: An otterdog Web App Helm chart for Kubernetes
 maintainers:
   - name: eclipse-csi
 type: application
-version: 1.1.0
+version: 1.1.1
 appVersion: "1.0.4"
 dependencies:
   - name: mongodb
