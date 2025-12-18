@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pia.fullname" . }}-config
+  labels:
+    {{- include "pia.labels" . | nindent 4 }}
+data:
+  allowlist.yaml: |
+    {{- .Values.config.allowlist | toYaml | nindent 4 }}

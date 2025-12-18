@@ -1,0 +1,15 @@
+apiVersion: v2
+name: pia
+description: A Helm chart for PIA (Project Information Aggregator)
+type: application
+version: 0.0.1
+appVersion: "0.1.0"
+keywords:
+  - pia
+  - dependency-track
+  - eclipse-csi
+home: https://github.com/eclipse-csi/pia
+sources:
+  - https://github.com/eclipse-csi/pia
+maintainers:
+  - name: eclipse-csi
