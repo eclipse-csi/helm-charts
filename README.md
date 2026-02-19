@@ -15,7 +15,7 @@ helm repo add eclipse-csi  https://eclipse-csi.github.io/helm-charts
 
 If you had already added this repo earlier, run `helm repo update` to retrieve
 the latest versions of the packages.  You can then run `helm search repo
-in-toto` to see the charts.
+eclipse-csi` to see the charts.
 
 ## Dependencies
 
