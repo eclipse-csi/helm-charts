@@ -6,7 +6,7 @@ image:
   repository: ghcr.io/eclipse-csi/pia
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.1.0"
+  tag: "0.2.1"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -103,14 +103,14 @@ resources:
 
 livenessProbe:
   httpGet:
-    path: /docs
+    path: /livez
     port: http
   initialDelaySeconds: 30
   periodSeconds: 10
 
 readinessProbe:
   httpGet:
-    path: /docs
+    path: /livez
     port: http
   initialDelaySeconds: 5
   periodSeconds: 5
