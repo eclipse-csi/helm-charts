@@ -1,3 +1,4 @@
+{{- if .Values.policies.enabled }}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -5,7 +6,7 @@ metadata:
   labels:
     {{- include "webapp.labels" . | nindent 4 }}
 spec:
-  schedule: "*/5 * * * *"
+  schedule: {{ .Values.policies.schedule | quote }}
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
   jobTemplate:
@@ -22,5 +23,6 @@ spec:
             command:
             - /bin/sh
             - -c
-            - curl -I http://{{ include "webapp.fullname" . }}:{{ .Values.service.port }}/internal/check/10
+            - curl -I http://{{ include "webapp.fullname" . }}:{{ .Values.service.port }}/internal/check/{{ .Values.policies.batchSize }}
           restartPolicy: Never
+{{- end }}
