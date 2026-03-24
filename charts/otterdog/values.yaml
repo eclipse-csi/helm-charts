@@ -56,6 +56,15 @@ config:
   dependencyTrackUrl: ""
   dependencyTrackToken: ""
 
+## @Section policies
+## @param policies.enabled Enable the policy check CronJob
+## @param policies.schedule Cron schedule for the policy check
+## @param policies.batchSize Number of checks per invocation
+policies:
+  enabled: true
+  schedule: "*/5 * * * *"
+  batchSize: 10
+
 ## @Section GitHub
 ## @param github.adminTeams GitHub admin teams
 ## @param github.webhookEndpoint GitHub webhook endpoint

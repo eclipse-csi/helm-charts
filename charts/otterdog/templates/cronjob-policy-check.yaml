@@ -1,0 +1,28 @@
+{{- if .Values.policies.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "webapp.fullname" . }}-trigger-policy-check
+  labels:
+    {{- include "webapp.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.policies.schedule | quote }}
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            {{- include "webapp.selectorLabels" . | nindent 12 }}
+        spec:
+          containers:
+          - name: check
+            image: curlimages/curl:8.10.1
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - curl -I http://{{ include "webapp.fullname" . }}:{{ .Values.service.port }}/internal/check/{{ .Values.policies.batchSize }}
+          restartPolicy: Never
+{{- end }}
