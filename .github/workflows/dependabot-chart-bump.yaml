@@ -16,6 +16,7 @@ permissions:
 
 jobs:
   bump:
+    # DO NOT REMOVE THIS LINE !!
     if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
@@ -63,7 +64,7 @@ jobs:
             exit 0
           fi
           git config user.name  'github-actions[bot]'
-          git config user.email 'security@eclipse-foundation.org'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add charts/*/Chart.yaml charts/*/values.yaml
           git commit -s -m "chore: bump chart version and appVersion after dependency update"
           git push

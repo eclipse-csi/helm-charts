@@ -31,7 +31,7 @@ updates:
       prefix: "deps-helm"
       include: "scope"
     groups:
-      otterdog-helm-deps:
+      pia-helm-deps:
         patterns:
           - "*"
   - package-ecosystem: "helm"
@@ -43,6 +43,6 @@ updates:
       prefix: "deps-helm"
       include: "scope"
     groups:
-      otterdog-helm-deps:
+      ghproxy-helm-deps:
         patterns:
           - "*"
