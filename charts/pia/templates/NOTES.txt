@@ -28,20 +28,3 @@
 
    Dependency Track URL: {{ .Values.config.dependencyTrackUrl }}
    Expected Audience: {{ .Values.config.expectedAudience }}
-   Projects:
-   {{- if .Values.config.projects }}
-   {{- range $name, $project := .Values.config.projects }}
-
-     {{ $name }}:
-       issuer: {{ $project.issuer }}
-       dt_parent_uuid: {{ $project.dt_parent_uuid }}
-       {{- if $project.required_claims }}
-       required_claims:
-         {{- range $key, $value := $project.required_claims }}
-         {{ $key }}: {{ $value }}
-         {{- end }}
-       {{- end }}
-   {{- end }}
-   {{- else }}
-     None configured
-   {{- end }}

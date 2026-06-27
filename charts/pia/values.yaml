@@ -24,21 +24,6 @@ config:
   # This should be set via --set or values override for security
   dependencyTrackApiKey: ""
 
-  # Allow list of projects
-  projects:
-    # Example GitHub Actions project
-    # my-github-project:
-    #   issuer: "https://token.actions.githubusercontent.com"
-    #   dt_parent_uuid: "12345678-1234-1234-1234-123456789abc"
-    #   required_claims:
-    #     repository: "eclipse-foo/my-github-project"
-
-    # Example Jenkins project
-    # Note: Jenkins projects typically don't need required_claims
-    # my-jenkins-project:
-    #   issuer: "https://ci.eclipse.org/my-jenkins-project/oidc"
-    #   dt_parent_uuid: "87654321-4321-4321-4321-cba987654321"
-
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
