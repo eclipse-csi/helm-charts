@@ -2,7 +2,7 @@ apiVersion: v2
 name: pia
 description: A Helm chart for PIA (Project Identity Authority)
 type: application
-version: 0.0.2
+version: 0.1.0
 appVersion: "0.2.1"
 keywords:
   - pia

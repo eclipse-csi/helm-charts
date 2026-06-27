@@ -25,6 +25,13 @@
    Set the API key using:
      --set config.dependencyTrackApiKey=YOUR_API_KEY
    {{- end }}
+   {{- if and (not .Values.config.databaseUrl) (not .Values.config.existingSecret) }}
+   WARNING: No PostgreSQL database configured!
+   PIA requires a reachable PostgreSQL database and runs schema migrations on
+   startup. Set the connection string using:
+     --set config.databaseUrl=postgresql://user:pass@host:5432/pia
+   or reference an existing secret with config.existingSecret.
+   {{- end }}
 
    Dependency Track URL: {{ .Values.config.dependencyTrackUrl }}
    Expected Audience: {{ .Values.config.expectedAudience }}

@@ -24,6 +24,20 @@ config:
   # This should be set via --set or values override for security
   dependencyTrackApiKey: ""
 
+  # PostgreSQL connection string (required as of PIA 0.3.0)
+  # PIA runs Alembic migrations against this database on startup, so it must
+  # point to a reachable PostgreSQL instance (no dummy value).
+  # Example: postgresql://pia:password@postgres.example.com:5432/pia
+  # For security, set this via --set or a values override, or reference an
+  # existing secret below instead.
+  databaseUrl: ""
+
+  # Reference an existing secret that already holds the database URL instead of
+  # storing it in this chart's secret. When set, databaseUrl above is ignored.
+  existingSecret: ""
+  # Key within existingSecret that holds the PostgreSQL connection string.
+  existingSecretKey: "PIA_DATABASE_URL"
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
