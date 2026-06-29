@@ -24,20 +24,19 @@ config:
   # This should be set via --set or values override for security
   dependencyTrackApiKey: ""
 
-  # Allow list of projects
-  projects:
-    # Example GitHub Actions project
-    # my-github-project:
-    #   issuer: "https://token.actions.githubusercontent.com"
-    #   dt_parent_uuid: "12345678-1234-1234-1234-123456789abc"
-    #   required_claims:
-    #     repository: "eclipse-foo/my-github-project"
+  # PostgreSQL connection string (required as of PIA 0.3.0)
+  # PIA runs Alembic migrations against this database on startup, so it must
+  # point to a reachable PostgreSQL instance (no dummy value).
+  # Example: postgresql://pia:password@postgres.example.com:5432/pia
+  # For security, set this via --set or a values override, or reference an
+  # existing secret below instead.
+  databaseUrl: ""
 
-    # Example Jenkins project
-    # Note: Jenkins projects typically don't need required_claims
-    # my-jenkins-project:
-    #   issuer: "https://ci.eclipse.org/my-jenkins-project/oidc"
-    #   dt_parent_uuid: "87654321-4321-4321-4321-cba987654321"
+  # Reference an existing secret that already holds the database URL instead of
+  # storing it in this chart's secret. When set, databaseUrl above is ignored.
+  existingSecret: ""
+  # Key within existingSecret that holds the PostgreSQL connection string.
+  existingSecretKey: "PIA_DATABASE_URL"
 
 serviceAccount:
   # Specifies whether a service account should be created
