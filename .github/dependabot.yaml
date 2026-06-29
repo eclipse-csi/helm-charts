@@ -10,7 +10,7 @@
 version: 2
 enable-beta-ecosystems: true
 updates:
-  - package-ecosystem: "helm" 
+  - package-ecosystem: "helm"
     directory: "/charts/otterdog/"
     schedule:
       interval: "daily"
@@ -20,5 +20,29 @@ updates:
       include: "scope"
     groups:
       otterdog-helm-deps:
+        patterns:
+          - "*"
+  - package-ecosystem: "helm"
+    directory: "/charts/pia/"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+    commit-message:
+      prefix: "deps-helm"
+      include: "scope"
+    groups:
+      pia-helm-deps:
+        patterns:
+          - "*"
+  - package-ecosystem: "helm"
+    directory: "/charts/ghproxy/"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+    commit-message:
+      prefix: "deps-helm"
+      include: "scope"
+    groups:
+      ghproxy-helm-deps:
         patterns:
           - "*"
