@@ -46,12 +46,12 @@ spec:
               value: {{ .Values.config.dependencyTrackUrl | quote }}
             - name: PIA_EXPECTED_AUDIENCE
               value: {{ .Values.config.expectedAudience | quote }}
-            {{- if .Values.config.existingSecret }}
+            {{- if .Values.config.dbExistingSecret }}
             - name: PIA_DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.config.existingSecret }}
-                  key: {{ .Values.config.existingSecretKey | default "PIA_DATABASE_URL" }}
+                  name: {{ .Values.config.dbExistingSecret }}
+                  key: {{ .Values.config.dbExistingSecretKey | default "PIA_DATABASE_URL" }}
             {{- else if .Values.config.databaseUrl }}
             - name: PIA_DATABASE_URL
               valueFrom:
