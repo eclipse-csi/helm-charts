@@ -26,11 +26,20 @@
      --set config.dependencyTrackApiKey=YOUR_API_KEY
    {{- end }}
    {{- if and (not .Values.config.databaseUrl) (not .Values.config.existingSecret) }}
-   WARNING: No PostgreSQL database configured!
-   PIA requires a reachable PostgreSQL database and runs schema migrations on
-   startup. Set the connection string using:
-     --set config.databaseUrl=postgresql://user:pass@host:5432/pia
+   WARNING: No runtime PostgreSQL database configured!
+   PIA requires a reachable PostgreSQL database. The app reads from it using a
+   read-only user. Set the connection string using:
+     --set config.databaseUrl=postgresql://pia_app:pass@host:5432/pia
    or reference an existing secret with config.existingSecret.
+   {{- end }}
+   {{- if and .Values.migration.enabled (not .Values.migration.databaseUrl) (not .Values.migration.existingSecret) }}
+   WARNING: Migrations are enabled but no migration database URL is configured!
+   Schema migrations run as a pre-install/pre-upgrade hook job under a user with
+   DDL privileges. Set it using:
+     --set migration.databaseUrl=postgresql://pia_migrate:pass@host:5432/pia
+   or reference an existing secret with migration.existingSecret.
+   (Disable the hook with --set migration.enabled=false if migrations are run
+   out of band.)
    {{- end }}
 
    Dependency Track URL: {{ .Values.config.dependencyTrackUrl }}

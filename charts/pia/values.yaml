@@ -6,7 +6,9 @@ image:
   repository: ghcr.io/eclipse-csi/pia
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.2.1"
+  # Requires a PIA release whose image does NOT migrate on startup (the migration
+  # job below owns migrations); see the appVersion note in Chart.yaml. >= 0.3.1.
+  tag: "0.3.1"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -24,10 +26,11 @@ config:
   # This should be set via --set or values override for security
   dependencyTrackApiKey: ""
 
-  # PostgreSQL connection string (required as of PIA 0.3.0)
-  # PIA runs Alembic migrations against this database on startup, so it must
-  # point to a reachable PostgreSQL instance (no dummy value).
-  # Example: postgresql://pia:password@postgres.example.com:5432/pia
+  # PostgreSQL connection string for the RUNTIME app (required).
+  # This is used by the long-lived app pods, which only read from the database,
+  # so this user only needs CONNECT + USAGE + SELECT. Schema changes are applied
+  # by the migration job below under a separate, higher-privileged user.
+  # Example: postgresql://pia_app:password@postgres.example.com:5432/pia
   # For security, set this via --set or a values override, or reference an
   # existing secret below instead.
   databaseUrl: ""
@@ -37,6 +40,33 @@ config:
   existingSecret: ""
   # Key within existingSecret that holds the PostgreSQL connection string.
   existingSecretKey: "PIA_DATABASE_URL"
+
+## Database migration job
+# Runs "alembic upgrade head" as a Helm pre-install/pre-upgrade hook, before the
+# app Deployment is rolled out. This gates the rollout on a successful migration
+# and keeps schema-changing (DDL) privileges out of the long-lived app pods.
+migration:
+  enabled: true
+
+  # PostgreSQL connection string for the MIGRATION user. This user needs DDL
+  # privileges (CREATE/ALTER/DROP) on the schema; the simplest setup is for it
+  # to own the database. Keep this separate from config.databaseUrl above.
+  # Example: postgresql://pia_migrate:password@postgres.example.com:5432/pia
+  databaseUrl: ""
+
+  # Alternatively, reference an existing secret holding the migration URL
+  # (recommended for the high-privilege credential — provision it out of band).
+  # When set, migration.databaseUrl above is ignored.
+  existingSecret: ""
+  existingSecretKey: "PIA_DATABASE_URL"
+
+  # Job tuning. backoffLimit caps retries; activeDeadlineSeconds fails the
+  # release (instead of blocking forever) if a migration hangs.
+  backoffLimit: 1
+  activeDeadlineSeconds: 600
+
+  podAnnotations: {}
+  resources: {}
 
 serviceAccount:
   # Specifies whether a service account should be created

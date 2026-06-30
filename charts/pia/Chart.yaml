@@ -2,8 +2,11 @@ apiVersion: v2
 name: pia
 description: A Helm chart for PIA (Project Identity Authority)
 type: application
-version: 0.1.0
-appVersion: "0.2.1"
+version: 0.2.0
+# This chart applies migrations via a pre-upgrade hook job and requires a PIA
+# image whose default command is plain uvicorn (i.e. it does NOT migrate on
+# startup); that behavior ships in PIA 0.3.1.
+appVersion: "0.3.1"
 keywords:
   - pia
   - dependency-track

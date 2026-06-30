@@ -1,0 +1,61 @@
+{{- if .Values.migration.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  # Include the release revision: a Job spec is immutable, so a fixed name would
+  # make the next "helm upgrade" fail. before-hook-creation cleans up the prior.
+  name: {{ include "pia.fullname" . }}-migrate-{{ .Release.Revision }}
+  labels:
+    {{- include "pia.labels" . | nindent 4 }}
+    app.kubernetes.io/component: migrate
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "0"
+    # Keep a failed job so its logs can be inspected; remove on success.
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: {{ .Values.migration.backoffLimit }}
+  activeDeadlineSeconds: {{ .Values.migration.activeDeadlineSeconds }}
+  template:
+    metadata:
+      labels:
+        {{- include "pia.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: migrate
+      {{- with .Values.migration.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      restartPolicy: Never
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "pia.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: migrate
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          # Override the image's default command (uvicorn) to run migrations.
+          command: ["alembic", "upgrade", "head"]
+          env:
+            {{- if .Values.migration.existingSecret }}
+            - name: PIA_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.migration.existingSecret }}
+                  key: {{ .Values.migration.existingSecretKey | default "PIA_DATABASE_URL" }}
+            {{- else }}
+            - name: PIA_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "pia.fullname" . }}-migrate-secret
+                  key: PIA_DATABASE_URL
+            {{- end }}
+          resources:
+            {{- toYaml .Values.migration.resources | nindent 12 }}
+{{- end }}
