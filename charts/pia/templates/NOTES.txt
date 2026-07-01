@@ -20,10 +20,11 @@
 {{- end }}
 
 2. Configuration:
-   {{- if not .Values.config.dependencyTrackApiKey }}
+   {{- if and (not .Values.config.dependencyTrackApiKey) (not .Values.config.dtApiExistingSecret) }}
    WARNING: No Dependency Track API key configured!
    Set the API key using:
      --set config.dependencyTrackApiKey=YOUR_API_KEY
+   or reference an existing secret with config.dtApiExistingSecret.
    {{- end }}
    {{- if and (not .Values.config.databaseUrl) (not .Values.config.dbExistingSecret) }}
    WARNING: No runtime PostgreSQL database configured!

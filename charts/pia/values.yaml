@@ -23,6 +23,13 @@ config:
   # This should be set via --set or values override for security
   dependencyTrackApiKey: ""
 
+  # Reference an existing secret that already holds the Dependency Track API key
+  # instead of storing it in this chart's secret. When set, dependencyTrackApiKey
+  # above is ignored.
+  dtApiExistingSecret: ""
+  # Key within dtApiExistingSecret that holds the API key.
+  dtApiExistingSecretKey: "PIA_DEPENDENCY_TRACK_API_KEY"
+
   # PostgreSQL connection string for the RUNTIME app (required).
   # This is used by the long-lived app pods, which only read from the database,
   # so this user only needs CONNECT + USAGE + SELECT. Schema changes are applied

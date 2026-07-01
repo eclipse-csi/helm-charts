@@ -59,7 +59,13 @@ spec:
                   name: {{ include "pia.fullname" . }}-secret
                   key: PIA_DATABASE_URL
             {{- end }}
-            {{- if .Values.config.dependencyTrackApiKey }}
+            {{- if .Values.config.dtApiExistingSecret }}
+            - name: PIA_DEPENDENCY_TRACK_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.config.dtApiExistingSecret }}
+                  key: {{ .Values.config.dtApiExistingSecretKey | default "PIA_DEPENDENCY_TRACK_API_KEY" }}
+            {{- else if .Values.config.dependencyTrackApiKey }}
             - name: PIA_DEPENDENCY_TRACK_API_KEY
               valueFrom:
                 secretKeyRef:
