@@ -12,13 +12,15 @@ image:
   tag: v20251030-0e4d5be42
   pullPolicy: IfNotPresent
 
-redisAddress: valkey:6379
+# Redis/Valkey address. Leave empty to auto-derive the valkey service
+# (<release>-valkey.<namespace>.svc.cluster.local:6379).
+redisAddress: ""
 redisUsername: ""
-redisPassword: ""
+redisPassword: "changeme"
 legacyDisableDiskCachePartitionsByAuthHeader: false
 throttlingTimeMs: 10
 getThrottlingTimeMs: 10
-logLevel: error
+logLevel: info
 # Additional custom arguments (if needed)
 # Example:
 # extraArgs:
@@ -51,3 +53,25 @@ autoscaling:
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
+
+# When vault.enabled is true, the redis-password is synced from Vault via the
+# Vault Secrets Operator (VSO) into the <release>-ghproxy-redis-auth Secret.
+# Vault key mapping:
+#   valkey_password → <release>-ghproxy-redis-auth (key: redis-password)
+vault:
+  # -- Enable Vault Secrets Operator (VSO) integration for the redis-password secret
+  enabled: false
+  # -- Vault Kubernetes auth path, e.g. auth/kubernetes-<instance>-<env>-<namespace>
+  authPath: ""
+  # -- Vault role for authentication, e.g. <instance>-<env>_<namespace>_role
+  role: ""
+  # -- Vault KV v2 secrets engine mount path, e.g. csi
+  secretMount: "csi"
+  # -- Full path inside the mount, e.g. otterdog/<env> → csi/data/otterdog/staging
+  secretPath: "otterdog/dev"
+    # -- Service account name for the Vault Kubernetes auth method (optional; defaults to "secrets-manager-sa")
+  serviceAccountName: "secrets-manager-sa"
+    # -- VSO operator configuration
+  operator:
+    # -- How often VSO syncs the secret from Vault (e.g. 30s, 1m)
+    refreshAfter: "30s"

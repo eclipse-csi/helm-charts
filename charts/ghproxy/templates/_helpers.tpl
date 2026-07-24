@@ -72,10 +72,29 @@ Create the name of the service account to use
 
 
 {{/*
+Redis/Valkey address.
+Auto-derived from the valkey service (<release>-valkey.<namespace>) when not set.
+Override with .Values.redisAddress.
+*/}}
+{{- define "ghproxy.redisAddress" -}}
+{{- .Values.redisAddress | default (printf "%s-valkey.%s.svc.cluster.local:6379" .Release.Name .Release.Namespace) -}}
+{{- end -}}
+
+{{/*
+Redis/Valkey username.
+Falls back to "default" when a password is in use (redisPassword set or vault.enabled)
+and no explicit username is provided; otherwise empty (no --redis-username).
+*/}}
+{{- define "ghproxy.redisUsername" -}}
+{{- $withPassword := or .Values.redisPassword .Values.vault.enabled -}}
+{{- .Values.redisUsername | default (ternary "default" "" (not (empty $withPassword))) -}}
+{{- end -}}
+
+{{/*
 Extract Redis host from URI
 */}}
 {{- define "ghproxy.redis.host" -}}
-{{- $uri := .Values.redisAddress | default "" -}}
+{{- $uri := include "ghproxy.redisAddress" . -}}
 {{- /* Try extracting host after @ if auth is present */ -}}
 {{- $host := regexFind "@([^:/]+)" $uri | trimPrefix "@" -}}
 {{- /* If no auth, get the host directly after scheme or start of string */ -}}
@@ -90,7 +109,7 @@ Extract Redis host from URI
 Extract Redis port from URI
 */}}
 {{- define "ghproxy.redis.port" -}}
-{{- $uri := .Values.redisAddress | default "" -}}
+{{- $uri := include "ghproxy.redisAddress" . -}}
 {{- $port := regexFind ":([0-9]+)$" $uri | trimPrefix ":" -}}
 {{- default "6379" $port -}}
 {{- end -}}
