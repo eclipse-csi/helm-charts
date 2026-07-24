@@ -1,7 +1,3 @@
-{{- if and .Values.ingress.enabled .Values.router.enabled }}
-{{- fail "Both ingress and router cannot be enabled at the same time. Please enable only one of them." }}
-{{- end }}
-
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "webapp.fullname" . -}}
 {{- $svcPort := .Values.service.port -}}
@@ -70,36 +66,3 @@ spec:
           {{- end }}
     {{- end }}
 {{- end }}
-
-{{- if .Values.router.enabled -}}
-{{- $fullName := include "webapp.fullname" . -}}
-{{- $svcPort := .Values.service.port -}}
-apiVersion: route.openshift.io/v1
-kind: Route
-metadata:
-  name: {{ $fullName }}
-  labels:
-    {{- include "webapp.labels" . | nindent 4 }}
-  {{- with .Values.router.annotations }}
-  annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
-spec:
-  {{- if .Values.router.host }}
-  host: {{ .Values.router.host }}
-  {{- end }}
-  {{- if .Values.router.path }}
-  path: {{ .Values.router.path }}
-  {{- end }}
-  port:
-    targetPort: {{ .Values.router.targetPort | default "http" }}
-  {{- if .Values.router.tls.enabled }}
-  tls:
-    termination: {{ .Values.router.tls.termination | default "edge" }}
-    insecureEdgeTerminationPolicy: {{ .Values.router.tls.insecureEdgeTerminationPolicy | default "Redirect" }}
-  {{- end }}
-  to:
-    kind: Service
-    name: {{ $fullName }}
-    weight: {{ .Values.router.weight | default 100 }}
-{{- end -}}

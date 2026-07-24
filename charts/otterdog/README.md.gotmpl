@@ -1,0 +1,194 @@
+{{ template "chart.header" . }}
+{{ template "chart.deprecationWarning" . }}
+
+![Version: {{ template "chart.version" . }}][version-badge] <!-- x-release-please-version -->
+{{ template "chart.typeBadge" . }}
+{{ template "chart.appVersionBadge" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "chart.homepageLine" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+## Installation
+
+Add the Eclipse CSI Helm repository:
+
+```console
+helm repo add eclipse-csi https://eclipse-csi.github.io/helm-charts
+helm repo update
+```
+
+Install the chart with the release name `otterdog`:
+
+```console
+helm install otterdog eclipse-csi/{{ template "chart.name" . }} \
+  --namespace otterdog --create-namespace
+```
+
+Provide your own configuration with a values file:
+
+```console
+helm install otterdog eclipse-csi/{{ template "chart.name" . }} \
+  --namespace otterdog --create-namespace \
+  -f my-values.yaml
+```
+
+Or override individual values on the command line:
+
+```console
+helm install otterdog eclipse-csi/{{ template "chart.name" . }} \
+  --namespace otterdog --create-namespace \
+  --set config.configOwner=MyOrg \
+  --set github.appId=123456
+```
+
+Upgrade an existing release:
+
+```console
+helm upgrade otterdog eclipse-csi/{{ template "chart.name" . }} \
+  --namespace otterdog -f my-values.yaml
+```
+
+Uninstall the release:
+
+```console
+helm uninstall otterdog --namespace otterdog
+```
+
+> **Note:** the `mongodb`, `valkey` and `ghproxy` sub-charts are enabled by default,
+> and the MongoDB, Valkey and ghproxy connection endpoints are auto-derived from the
+> sub-chart service names — no manual host configuration is needed in the common case.
+> Secrets must be supplied either through `values.yaml` or through Vault — see the
+> [Secrets](#secrets) section below. See the [Values](#values) section for all options.
+
+## Development mode
+
+For local development you can run the chart entirely self-contained: no Vault, all
+dependencies (MongoDB, Valkey, ghproxy) deployed by the sub-charts, and debug logging
+enabled. Secrets are provided inline in your values file (dev only — never commit real
+secrets).
+
+Create a `dev-values.yaml`:
+
+```yaml
+# vault disabled → secrets come from this file
+vault:
+  enabled: false
+
+config:
+  # verbose logging
+  debug: true
+  configOwner: "MyOrg"
+  configRepo: "otterdog-configs"
+  configPath: "otterdog.json"
+  configToken: "ghp_xxx"
+  # mongoHost / mongoPort / valkeyUri / ghProxyUri are auto-derived from the
+  # sub-chart services, so they can be left empty in dev.
+
+github:
+  appId: "123456"
+  # PEM content of the GitHub App private key
+  appPrivateKey: |
+    -----BEGIN RSA PRIVATE KEY-----
+    ...
+    -----END RSA PRIVATE KEY-----
+  webhookSecret: "dev-webhook-secret"
+
+# in-cluster dependencies (enabled by default, shown here for clarity)
+mongodb:
+  enabled: true
+  auth:
+    rootPassword: changeme
+    appUserPassword: changeme
+valkey:
+  enabled: true
+ghproxy:
+  enabled: true
+```
+
+Install into a dev namespace:
+
+```console
+helm install otterdog eclipse-csi/{{ template "chart.name" . }} \
+  --namespace otterdog-dev --create-namespace \
+  -f dev-values.yaml
+```
+
+Port-forward the service to reach the web app locally:
+
+```console
+kubectl -n otterdog-dev port-forward svc/otterdog 5000:5000
+```
+
+Then open <http://localhost:5000>.
+
+To iterate quickly on chart changes, render the manifests without installing:
+
+```console
+helm template otterdog . -f dev-values.yaml | less
+```
+
+## Secrets
+
+Secrets can be provided in two mutually exclusive ways, controlled by `vault.enabled`.
+
+### Non-Vault mode (`vault.enabled: false`)
+
+Secret values are read from `values.yaml` and rendered into dedicated Kubernetes
+`Secret` objects by `templates/secrets.yaml`. This is intended for local/dev use only —
+do not commit real secrets.
+
+### Vault mode (`vault.enabled: true`)
+
+Secrets are synced from HashiCorp Vault by the
+[Vault Secrets Operator (VSO)](https://developer.hashicorp.com/vault/docs/platform/k8s/vso).
+`templates/vault-static-secret.yaml` creates one `VaultStaticSecret` per secret, each syncing
+into its own Kubernetes `Secret`.
+
+All keys are read from a single Vault KV v2 entry:
+
+```
+<vault.secretMount>/data/<vault.secretPath>     e.g. csi/data/otterdog/dev
+```
+
+The following keys must exist in that Vault entry:
+
+| Vault key | Kubernetes Secret (VSO destination) | Consumed as |
+| --------- | ----------------------------------- | ----------- |
+| `otterdog_config_token` | `<release>-config-token` | env `OTTERDOG_CONFIG_TOKEN` |
+| `github_webhook_secret` | `<release>-webhook-secret` | env `GITHUB_WEBHOOK_SECRET` |
+| `github_app_key` | `<release>-app-private-key` | file `/run/secrets/app-private-key/app.key` (env `GITHUB_APP_PRIVATE_KEY`) |
+| `dependency_track_token` | `<release>-dependency-track-token` | env `DEPENDENCY_TRACK_TOKEN` |
+| `mongodb_root_password` | `<release>-mongodb-root-credentials` | MongoDB subchart root password; also embedded in `MONGO_URI` when no `mongodb.customUsers` are configured |
+| `mongodb_app_password` | `<release>-mongodb-app-credentials` (key `CUSTOM_PASSWORD`) and `<release>-mongo-uri` (env `MONGO_URI`) | MongoDB app user password |
+| `valkey_password` | `<release>-valkey-credentials` | Valkey subchart password (used by the `valkey` sub-chart itself via `auth.existingSecret`/`auth.existingSecretPasswordKey`); only synced when `valkey.enabled` and `valkey.auth.enabled` |
+| `valkey_password` | `<release>-valkey-uri` (env `REDIS_URI`) | Same password, embedded in the app's `REDIS_URI` when `valkey.auth.enabled`; when `valkey.auth.enabled: false`, `REDIS_URI` is still created but with no credentials |
+
+Notes:
+
+- `MONGO_URI` is built by one of three mutually exclusive `VaultStaticSecret` variants,
+  selected automatically based on `mongodb.customUsers` / `mongodb.auth.enabled`:
+  - `mongodb.customUsers` configured → uses `mongodb_app_password`, with
+    `authSource=<mongodb.customUsers[0].database>` (default `otterdog`).
+  - no `customUsers`, `mongodb.auth.enabled: true` → uses `mongodb_root_password`, with
+    `authSource=admin` — MongoDB's root user always lives in the `admin` database,
+    regardless of `config.mongoDatabase`.
+  - `mongodb.auth.enabled: false` → no credentials at all in `MONGO_URI`.
+- `mongodb_root_password` is also used by the MongoDB subchart to bootstrap the root user
+  (and the app user, when `mongodb.customUsers` is configured).
+- Similarly, `valkey_password` has two destinations: `<release>-valkey-credentials` bootstraps
+  the Valkey server itself (subchart-consumed), while `<release>-valkey-uri` is what the
+  otterdog app actually connects with (`REDIS_URI`) — keep both in sync if you rotate it
+  manually instead of just updating the Vault value.
+- Vault connection settings (auth path, role, mount and path) are configured under the
+  `vault.*` values below.
+
+{{ template "chart.valuesSection" . }}
+
+<!-- x-release-please-start-version -->
+[version-badge]: https://img.shields.io/badge/Version-{{ template "chart.version" . }}%2Dinformational?style=flat-square
+<!-- x-release-please-end -->
