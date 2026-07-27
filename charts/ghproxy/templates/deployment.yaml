@@ -37,13 +37,12 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
-          {{- if .Values.redisAddress }}
-            - "--redis-address={{ .Values.redisAddress }}"
+            - "--redis-address={{ include "ghproxy.redisAddress" . }}"
+          {{- $redisUsername := include "ghproxy.redisUsername" . }}
+          {{- if $redisUsername }}
+            - "--redis-username={{ $redisUsername }}"
           {{- end }}
-          {{- if .Values.redisUsername }}
-            - "--redis-username={{ .Values.redisUsername }}"
-          {{- end }}
-          {{- if .Values.redisPassword }}
+          {{- if or .Values.redisPassword .Values.vault.enabled }}
             - "--redis-secret-file=/etc/ghproxy-redis/redis-password"
           {{- end }}
           {{- if ne .Values.legacyDisableDiskCachePartitionsByAuthHeader nil }}
@@ -68,7 +67,7 @@ spec:
           volumeMounts:
             - name: cache-volume
               mountPath: {{ .Values.persistence.mountPath }}
-            {{- if .Values.redisPassword }}
+            {{- if or .Values.redisPassword .Values.vault.enabled }}
             - name: redis-secret
               mountPath: /etc/ghproxy-redis
               readOnly: true
@@ -82,7 +81,7 @@ spec:
           hostPath:
             path: ../approot/ghcache
           {{- end }}
-        {{- if .Values.redisPassword }}
+        {{- if or .Values.redisPassword .Values.vault.enabled }}
         - name: redis-secret
           secret:
             secretName: {{ include "ghproxy.fullname" . }}-redis-auth

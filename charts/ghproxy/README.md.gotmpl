@@ -1,0 +1,116 @@
+{{ template "chart.header" . }}
+{{ template "chart.deprecationWarning" . }}
+
+![Version: {{ template "chart.version" . }}][version-badge] <!-- x-release-please-version -->
+{{ template "chart.typeBadge" . }}
+{{ template "chart.appVersionBadge" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "chart.homepageLine" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+## Installation
+
+`ghproxy` is a [caching reverse proxy for the GitHub API](https://github.com/kubernetes/test-infra/tree/master/ghproxy),
+backed by Redis/Valkey. It is deployed as a stand-alone chart, or as a sub-chart
+dependency of the `otterdog` chart.
+
+Add the Eclipse CSI Helm repository:
+
+```console
+helm repo add eclipse-csi https://eclipse-csi.github.io/helm-charts
+helm repo update
+```
+
+Install the chart with the release name `ghproxy`:
+
+```console
+helm install ghproxy eclipse-csi/{{ template "chart.name" . }} \
+  --namespace ghproxy --create-namespace
+```
+
+Provide your own configuration with a values file:
+
+```console
+helm install ghproxy eclipse-csi/{{ template "chart.name" . }} \
+  --namespace ghproxy --create-namespace \
+  -f my-values.yaml
+```
+
+Or override individual values on the command line:
+
+```console
+helm install ghproxy eclipse-csi/{{ template "chart.name" . }} \
+  --namespace ghproxy --create-namespace \
+  --set redisAddress=my-redis:6379 \
+  --set throttlingTimeMs=50
+```
+
+Upgrade an existing release:
+
+```console
+helm upgrade ghproxy eclipse-csi/{{ template "chart.name" . }} \
+  --namespace ghproxy -f my-values.yaml
+```
+
+Uninstall the release:
+
+```console
+helm uninstall ghproxy --namespace ghproxy
+```
+
+> **Note:** ghproxy needs a Redis/Valkey instance to cache against. If none is deployed
+> alongside it (e.g. when installed standalone, without the otterdog parent chart's
+> `valkey` sub-chart), set `redisAddress` explicitly. See the [Secrets](#secrets) section
+> below for how the Redis password is supplied, and the [Values](#values) section for all
+> other options.
+
+## Secrets
+
+The only secret this chart manages is the Redis/Valkey password, supplied in one of two
+mutually exclusive ways, controlled by `vault.enabled`.
+
+### Non-Vault mode (`vault.enabled: false`)
+
+`redisPassword` is read from `values.yaml` and rendered into a `<release>-redis-auth`
+Kubernetes `Secret` by `templates/secret.yaml`. This is intended for local/dev use only —
+do not commit real secrets. Leave `redisPassword` empty to run against an unauthenticated
+Redis/Valkey instance (no secret/volume is mounted in that case).
+
+### Vault mode (`vault.enabled: true`)
+
+The password is synced from HashiCorp Vault by the
+[Vault Secrets Operator (VSO)](https://developer.hashicorp.com/vault/docs/platform/k8s/vso).
+`templates/vault-static-secret.yaml` creates a `VaultAuth` and a `VaultStaticSecret` that
+syncs into the `<release>-redis-auth` Kubernetes `Secret`.
+
+The key is read from a single Vault KV v2 entry:
+
+```
+<vault.secretMount>/data/<vault.secretPath>     e.g. csi/data/otterdog/dev
+```
+
+| Vault key | Kubernetes Secret (VSO destination) | Consumed as |
+| --------- | ----------------------------------- | ----------- |
+| `valkey_password` | `<release>-redis-auth` (key `redis-password`) | file `/etc/ghproxy-redis/redis-password` (arg `--redis-secret-file`) |
+
+Notes:
+
+- `vault.serviceAccountName` (default `secrets-manager-sa`) is the Kubernetes
+  **ServiceAccount used to authenticate the `VaultAuth` login**.
+- Vault connection settings (`vault.authPath`, `vault.role`, `vault.secretMount`,
+  `vault.secretPath`) must match a Kubernetes auth role in Vault that authorizes
+  `vault.serviceAccountName` in this release's namespace.
+- `redisUsername` defaults to `"default"` whenever a password is in use (`redisPassword`
+  set or `vault.enabled: true`) and no explicit username is given — matching Redis/Valkey's
+  own default ACL user name.
+
+{{ template "chart.valuesSection" . }}
+
+<!-- x-release-please-start-version -->
+[version-badge]: https://img.shields.io/badge/Version-{{ template "chart.version" . }}%2Dinformational?style=flat-square
+<!-- x-release-please-end -->
