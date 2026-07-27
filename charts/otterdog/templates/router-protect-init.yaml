@@ -1,0 +1,29 @@
+{{- if .Values.protectInit.router.enabled -}}
+{{- $name := include "otterdog.protectInit.fullname" . -}}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "webapp.labels" . | nindent 4 }}
+  {{- with .Values.protectInit.router.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with (.Values.protectInit.router.host | default .Values.router.host) }}
+  host: {{ . }}
+  {{- end }}
+  path: {{ .Values.protectInit.path }}
+  port:
+    targetPort: {{ .Values.router.targetPort | default "http" }}
+  {{- if and .Values.protectInit.router.tls .Values.protectInit.router.tls.enabled }}
+  tls:
+    termination: {{ .Values.protectInit.router.tls.termination | default "edge" }}
+    insecureEdgeTerminationPolicy: {{ .Values.protectInit.router.tls.insecureEdgeTerminationPolicy | default "Redirect" }}
+  {{- end }}
+  to:
+    kind: Service
+    name: {{ include "webapp.fullname" . }}
+    weight: {{ .Values.router.weight | default 100 }}
+{{- end -}}

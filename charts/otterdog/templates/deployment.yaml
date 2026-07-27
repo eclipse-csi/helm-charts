@@ -38,20 +38,29 @@ spec:
         - name: wait-for-mongodb
           image: busybox:1.37
           command: ['sh', '-c', 'until nc -z {{ include "otterdog.mongodb.host" . }} {{ include "otterdog.mongodb.port" . }}; do echo "waiting for MongoDB..."; sleep 2; done;']      
-        - name: wait-for-redis
+        - name: wait-for-valkey
           image: busybox:1.37
-          command: ['sh', '-c', 'until nc -z {{ include "otterdog.redis.host" . }} {{ include "otterdog.redis.port" . }}; do echo "waiting for Redis..."; sleep 2; done;']
+          command: ['sh', '-c', 'until nc -z {{ include "otterdog.valkey.host" . }} {{ include "otterdog.valkey.port" . }}; do echo "waiting for Redis..."; sleep 2; done;']
+        {{- if .Values.ghproxy.enabled }}
+        - name: wait-for-ghproxy
+          image: busybox:1.37
+          command: ['sh', '-c', 'until nc -z {{ include "otterdog.ghproxy.host" . }} {{ include "otterdog.ghproxy.port" . }}; do echo "waiting for ghproxy..."; sleep 2; done;']
+        {{- end }}
       {{- end }}     
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: {{ include "webapp.image.pullPolicy" . }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+          {{- with .Values.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
@@ -59,27 +68,15 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
+            - name: workdir
+              mountPath: {{ .Values.config.appRoot | quote }}
+              readOnly: false
             {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
-            {{- if .Values.config.configToken }}
-            - name: config-token-volume
-              mountPath: /run/secrets/config-token
-              readOnly: true
-            {{- end }}
-            {{- if .Values.github.webhookSecret }}
-            - name: webhook-secret-volume
-              mountPath: /run/secrets/webhook-secret
-              readOnly: true
-            {{- end }}
-            {{- if .Values.github.appPrivateKey }}
-            - name: app-private-key-volume
+            {{- if or .Values.vault.enabled .Values.github.appPrivateKey }}
+            - name: app-private-key
               mountPath: /run/secrets/app-private-key
-              readOnly: true
-            {{- end }}
-            {{- if .Values.config.deploymentTrackToken }}
-            - name: dependency-track-token-volume
-              mountPath: /run/secrets/dependency-track-token
               readOnly: true
             {{- end }}
           env:
@@ -92,11 +89,17 @@ spec:
             - name: APP_ROOT
               value: {{ .Values.config.appRoot | quote }}
             - name: MONGO_URI
-              value: {{ .Values.config.mongoUri | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "otterdog.secret.mongoUri" . }}
+                  key: mongo_uri
             - name: REDIS_URI
-              value: {{ .Values.config.redisUri | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "otterdog.secret.redisUri" . }}
+                  key: redis_uri
             - name: GHPROXY_URI
-              value: {{ .Values.config.ghProxyUri | quote }}
+              value: {{ include "otterdog.ghproxy.uri" . | quote }}
             - name: OTTERDOG_CONFIG_OWNER
               value: {{ .Values.config.configOwner | quote }}
             - name: OTTERDOG_CONFIG_REPO
@@ -106,15 +109,15 @@ spec:
             - name: OTTERDOG_CONFIG_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: config-token-secret
-                  key: token
+                  name: {{ include "otterdog.secret.configToken" . }}
+                  key: otterdog_config_token
             - name: DEPENDENCY_TRACK_URL
               value: {{ .Values.config.dependencyTrackUrl | quote }}
             - name: DEPENDENCY_TRACK_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: dependency-track-token-secret
-                  key: token
+                  name: {{ include "otterdog.secret.dependencyTrackToken" . }}
+                  key: dependency_track_token
             - name: GITHUB_ADMIN_TEAMS
               value: {{ .Values.github.adminTeams | quote }}
             - name: WEBHOOK_ENDPOINT
@@ -122,8 +125,8 @@ spec:
             - name: GITHUB_WEBHOOK_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: webhook-secret
-                  key: secret
+                  name: {{ include "otterdog.secret.webhookSecret" . }}
+                  key: github_webhook_secret
             - name: GITHUB_WEBHOOK_VALIDATION_CONTEXT
               value: {{ .Values.github.webhookValidationContext | quote }}
             - name: GITHUB_WEBHOOK_SYNC_CONTEXT
@@ -133,28 +136,18 @@ spec:
             - name: GITHUB_APP_PRIVATE_KEY
               value: /run/secrets/app-private-key/app.key
       volumes:
+        - name: workdir
+          emptyDir: {}
         {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-        {{- if .Values.config.configToken }}
-        - name: config-token-volume
+        {{- if or .Values.vault.enabled .Values.github.appPrivateKey }}
+        - name: app-private-key
           secret:
-            secretName: config-token-secret
-        {{- end }}
-        {{- if .Values.github.webhookSecret }}
-        - name: webhook-secret-volume
-          secret:
-            secretName: webhook-secret
-        {{- end }}
-        {{- if .Values.github.appPrivateKey }}
-        - name: app-private-key-volume
-          secret:
-            secretName: app-private-key
-        {{- end }}
-        {{- if .Values.dependencyTrackToken }}
-        - name: dependency-track-token-volume
-          secret:
-            secretName: dependency-track-token-secret
+            secretName: {{ include "otterdog.secret.appPrivateKey" . }}
+            items:
+              - key: github_app_key
+                path: app.key
         {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

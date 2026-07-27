@@ -1,0 +1,29 @@
+{{- if .Values.protectInit.ingress.enabled -}}
+{{- $name := include "otterdog.protectInit.fullname" . -}}
+{{- $svcPort := .Values.service.port -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "webapp.labels" . | nindent 4 }}
+  {{- with .Values.protectInit.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.protectInit.ingress.className }}
+  ingressClassName: {{ .Values.protectInit.ingress.className }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.protectInit.ingress.host | quote }}
+      http:
+        paths:
+          - path: {{ .Values.protectInit.path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "webapp.fullname" . }}
+                port:
+                  number: {{ $svcPort }}
+{{- end }}

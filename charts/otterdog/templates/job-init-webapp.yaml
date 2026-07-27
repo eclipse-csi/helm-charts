@@ -1,0 +1,32 @@
+{{- if .Values.initJob.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "webapp.fullname" . }}-init
+  labels:
+    {{- include "webapp.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: {{ .Values.initJob.backoffLimit | default 4 }}
+  template:
+    metadata:
+      labels:
+        {{- include "webapp.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+        - name: wait-for-otterdog
+          image: busybox:1.37
+          command: ['sh', '-c', 'until nc -z {{ include "webapp.fullname" . }} {{ .Values.service.port }}; do echo "waiting for otterdog..."; sleep 2; done;']
+      containers:
+        - name: init-webapp
+          image: curlimages/curl:8.10.1
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - curl -fsS --retry 10 --retry-connrefused --retry-delay 5 -I http://{{ include "webapp.fullname" . }}:{{ .Values.service.port }}/internal/init
+      restartPolicy: Never
+{{- end }}
