@@ -3,6 +3,18 @@ entries:
   ghproxy:
   - apiVersion: v2
     appVersion: v20251030-0e4d5be42
+    created: "2026-07-27T09:27:46.101837285Z"
+    description: A Helm chart for ghproxy
+    digest: 00acfe048d921668675b6cfdd696bdd0741d35185ab0a3ad4f16052bdb8b616f
+    maintainers:
+    - name: eclipse-csi
+    name: ghproxy
+    type: application
+    urls:
+    - https://github.com/eclipse-csi/helm-charts/releases/download/ghproxy-0.4.0/ghproxy-0.4.0.tgz
+    version: 0.4.0
+  - apiVersion: v2
+    appVersion: v20251030-0e4d5be42
     created: "2025-11-06T13:19:53.995659438Z"
     description: A Helm chart for ghproxy
     digest: 839d0f3012880b0cbf69699f0dcca613f8328fb8d086b393b9dcc08cbbdf1dce
@@ -518,4 +530,4 @@ entries:
     urls:
     - https://github.com/eclipse-csi/helm-charts/releases/download/pia-0.0.1/pia-0.0.1.tgz
     version: 0.0.1
-generated: "2026-07-06T07:58:12.596842254Z"
+generated: "2026-07-27T09:27:46.101932524Z"
