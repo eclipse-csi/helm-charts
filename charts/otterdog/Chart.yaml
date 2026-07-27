@@ -22,8 +22,8 @@ keywords:
   - eclipse
   - security
 maintainers:
-- name:  Eclipse Common Security Infrastructure
-  url: https://github.com/eclipse-csi/otterdog/
+  - name: eclipse-csi
+    url: https://github.com/eclipse-csi/otterdog/
 type: application
 kubeVersion: ">=1.23.0-0"
 version: 1.2.0
