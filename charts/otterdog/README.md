@@ -235,8 +235,8 @@ Notes:
 | github.adminTeams | string | `"otterdog-admins"` | GitHub admin teams |
 | github.webhookEndpoint | string | `"/github-webhook/receive\"\""` | GitHub webhook endpoint |
 | github.webhookSecret | string | `""` | GitHub webhook secret |
-| github.webhookValidationContext | string | `""` | GitHub webhook validation context |
-| github.webhookSyncContext | string | `""` | GitHub webhook sync context |
+| github.webhookValidationContext | string | `"otterdog/otterdog-validate"` | GitHub webhook validation context |
+| github.webhookSyncContext | string | `"otterdog/otterdog-sync"` | GitHub webhook sync context |
 | github.appId | string | `""` | GitHub app ID |
 | github.appPrivateKey | string | `""` | GitHub app private key |
 | vault.enabled | bool | `false` | Enable Vault Secrets Operator (VSO) integration for secrets |
