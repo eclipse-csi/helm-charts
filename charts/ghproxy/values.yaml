@@ -35,6 +35,19 @@ persistence:
   mountPath: /cache/
   size: 1Gi
   storageClassName: ""  # leave empty for default, or set explicitly
+  # -- Access modes for the PVC
+  accessModes:
+    - ReadWriteOnce
+  # -- Use an existing PVC instead of creating one; when set, no PVC is created by this chart
+  existingClaim: ""
+  # -- Bind to a specific, statically-provisioned PersistentVolume by name
+  volumeName: ""
+  # -- Label selector to match a pre-existing PersistentVolume, e.g. matchLabels
+  selector: {}
+  # -- Extra annotations to add to the PVC
+  annotations: {}
+  # -- Extra labels to add to the PVC, in addition to the chart's standard labels
+  labels: {}
 
 serviceAccount:
   # Specifies whether a service account should be created
