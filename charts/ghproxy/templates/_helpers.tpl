@@ -72,6 +72,14 @@ Create the name of the service account to use
 
 
 {{/*
+Name of the PVC used for the ghproxy cache volume.
+Uses persistence.existingClaim when set, otherwise the chart-managed PVC name.
+*/}}
+{{- define "ghproxy.pvcName" -}}
+{{- .Values.persistence.existingClaim | default (printf "%s-cache" (include "ghproxy.fullname" .)) -}}
+{{- end -}}
+
+{{/*
 Redis/Valkey address.
 Auto-derived from the valkey service (<release>-valkey.<namespace>) when not set.
 Override with .Values.redisAddress.

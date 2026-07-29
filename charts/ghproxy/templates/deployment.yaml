@@ -76,7 +76,7 @@ spec:
         - name: cache-volume
           {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
-            claimName: {{ include "ghproxy.fullname" . }}-cache
+            claimName: {{ include "ghproxy.pvcName" . }}
           {{- else }}
           hostPath:
             path: ../approot/ghcache
