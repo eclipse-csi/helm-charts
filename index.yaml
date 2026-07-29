@@ -76,6 +76,44 @@ entries:
   otterdog:
   - apiVersion: v2
     appVersion: 1.4.0
+    created: "2026-07-29T15:08:37.940582308Z"
+    dependencies:
+    - condition: ghproxy.enabled
+      name: ghproxy
+      repository: https://eclipse-csi.github.io/helm-charts
+      version: 0.4.0
+    - condition: mongodb.enabled
+      name: mongodb
+      repository: oci://registry-1.docker.io/cloudpirates
+      version: 0.18.1
+    - condition: valkey.enabled
+      name: valkey
+      repository: oci://registry-1.docker.io/cloudpirates
+      version: 0.24.3
+    description: An otterdog Web App Helm chart for Kubernetes
+    digest: ac17640b7a082376d73efc3f12573c6e4d0106cf06a87a7f313308970b495e81
+    home: https://github.com/eclipse-csi/otterdog
+    icon: https://raw.githubusercontent.com/eclipse-csi/.github/refs/heads/main/artwork/eclipse-otterdog/Logo%20Color%20-%20Transparent%20Bg.png
+    keywords:
+    - otterdog
+    - github
+    - configuration-as-code
+    - eclipse
+    - security
+    kubeVersion: '>=1.23.0-0'
+    maintainers:
+    - name: eclipse-csi
+      url: https://github.com/eclipse-csi/otterdog/
+    name: otterdog
+    sources:
+    - https://github.com/eclipse-csi/otterdog
+    - https://github.com/eclipse-csi/helm-charts
+    type: application
+    urls:
+    - https://github.com/eclipse-csi/helm-charts/releases/download/otterdog-1.2.2/otterdog-1.2.2.tgz
+    version: 1.2.2
+  - apiVersion: v2
+    appVersion: 1.4.0
     created: "2026-07-28T14:33:25.822500652Z"
     dependencies:
     - condition: ghproxy.enabled
@@ -630,4 +668,4 @@ entries:
     urls:
     - https://github.com/eclipse-csi/helm-charts/releases/download/pia-0.0.1/pia-0.0.1.tgz
     version: 0.0.1
-generated: "2026-07-29T09:08:03.176836946Z"
+generated: "2026-07-29T15:08:37.94071214Z"
