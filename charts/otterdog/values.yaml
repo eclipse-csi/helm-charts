@@ -88,9 +88,9 @@ github:
   # -- GitHub webhook secret
   webhookSecret: ""
   # -- GitHub webhook validation context
-  webhookValidationContext: ""
+  webhookValidationContext: "otterdog/otterdog-validate"
   # -- GitHub webhook sync context
-  webhookSyncContext: ""
+  webhookSyncContext: "otterdog/otterdog-sync"
   # -- GitHub app ID
   appId: ""
   # -- GitHub app private key

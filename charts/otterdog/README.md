@@ -1,6 +1,6 @@
 # otterdog
 
-![Version: 1.2.1][version-badge] <!-- x-release-please-version -->
+![Version: 1.2.2][version-badge] <!-- x-release-please-version -->
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 ![AppVersion: 1.4.0](https://img.shields.io/badge/AppVersion-1.4.0-informational?style=flat-square)
 
@@ -235,8 +235,8 @@ Notes:
 | github.adminTeams | string | `"otterdog-admins"` | GitHub admin teams |
 | github.webhookEndpoint | string | `"/github-webhook/receive\"\""` | GitHub webhook endpoint |
 | github.webhookSecret | string | `""` | GitHub webhook secret |
-| github.webhookValidationContext | string | `""` | GitHub webhook validation context |
-| github.webhookSyncContext | string | `""` | GitHub webhook sync context |
+| github.webhookValidationContext | string | `"otterdog/otterdog-validate"` | GitHub webhook validation context |
+| github.webhookSyncContext | string | `"otterdog/otterdog-sync"` | GitHub webhook sync context |
 | github.appId | string | `""` | GitHub app ID |
 | github.appPrivateKey | string | `""` | GitHub app private key |
 | vault.enabled | bool | `false` | Enable Vault Secrets Operator (VSO) integration for secrets |
@@ -329,5 +329,5 @@ Notes:
 | ghproxy.enabled | bool | `true` | Enable ghproxy |
 
 <!-- x-release-please-start-version -->
-[version-badge]: https://img.shields.io/badge/Version-1.2.1%2Dinformational?style=flat-square
+[version-badge]: https://img.shields.io/badge/Version-1.2.2%2Dinformational?style=flat-square
 <!-- x-release-please-end -->
