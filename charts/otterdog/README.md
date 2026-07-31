@@ -1,6 +1,6 @@
 # otterdog
 
-![Version: 1.2.2][version-badge] <!-- x-release-please-version -->
+![Version: 1.3.0][version-badge] <!-- x-release-please-version -->
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 ![AppVersion: 1.4.0](https://img.shields.io/badge/AppVersion-1.4.0-informational?style=flat-square)
 
@@ -19,9 +19,9 @@ Kubernetes: `>=1.23.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://eclipse-csi.github.io/helm-charts | ghproxy | 0.4.0 |
-| oci://registry-1.docker.io/cloudpirates | mongodb | 0.18.1 |
-| oci://registry-1.docker.io/cloudpirates | valkey | 0.24.3 |
+| https://eclipse-csi.github.io/helm-charts | ghproxy | 0.5.0 |
+| oci://registry-1.docker.io/cloudpirates | mongodb | 0.18.4 |
+| oci://registry-1.docker.io/cloudpirates | valkey | 0.24.6 |
 
 ## Installation
 
@@ -329,5 +329,5 @@ Notes:
 | ghproxy.enabled | bool | `true` | Enable ghproxy |
 
 <!-- x-release-please-start-version -->
-[version-badge]: https://img.shields.io/badge/Version-1.2.2%2Dinformational?style=flat-square
+[version-badge]: https://img.shields.io/badge/Version-1.3.0%2Dinformational?style=flat-square
 <!-- x-release-please-end -->
