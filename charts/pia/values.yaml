@@ -72,6 +72,71 @@ migration:
   podAnnotations: {}
   resources: {}
 
+## One-off project authorization sync job
+# Runs "pia sync <projects.yaml>", which reconciles the project authorizations in
+# the database to a curated projects.yaml. Sync needs database access, which
+# typically only exists inside the cluster, so it runs as a Job from the app
+# image, with projects.yaml mounted from a ConfigMap this chart also renders.
+#
+# Unlike the migration above, a sync is NOT part of a release: it is a manual,
+# reviewed operation (a full reconcile that can delete rows), so both the Job and
+# the ConfigMap are off by default. Render them on demand instead, without
+# touching the release:
+#
+#   helm template <release> eclipse-csi/pia --version <chart-version> \
+#     --values <the release's values.yaml> \
+#     --set sync.enabled=true \
+#     --set-file sync.projects=projects.yaml \
+#     --set-json 'sync.args=["--dry-run"]' \
+#     --show-only templates/sync-configmap.yaml \
+#     --show-only templates/sync-job.yaml | kubectl apply -f -
+#
+# The pia.eclipse.org repository wraps exactly that in its sync.sh.
+sync:
+  enabled: false
+
+  # Contents of projects.yaml, mounted at /config/projects.yaml. Required when
+  # sync.enabled is true; pass the curated file with
+  # --set-file sync.projects=<path> rather than inlining it here.
+  projects: ""
+
+  # Extra arguments for "pia sync", e.g. ["--dry-run"] to only print the plan, or
+  # ["--allow-db-updates-and-deletions"] to let it apply a plan that is not
+  # purely additive. --dt-url is set from dtUrl below and must not be repeated.
+  args: []
+
+  # DependencyTrack base URL sync resolves project names against. Defaults to
+  # config.dependencyTrackUrl minus its /api/v1/bom upload path, so sync uses the
+  # same instance the app uploads to.
+  dtUrl: ""
+
+  # Image and pull policy for the sync job. Both default to the app image, which
+  # ships the sync CLI and is version-locked to the database schema. Override
+  # only to run a different build of the CLI.
+  image: ""
+  imagePullPolicy: ""
+
+  # Existing secrets holding the sync credentials, provisioned out of band. Sync
+  # writes to the database and reads from DependencyTrack and GitHub, so it needs
+  # its own credentials, separate from the app's and the migration user's:
+  #   dbExistingSecret        PIA_DATABASE_URL, user needs INSERT/UPDATE/DELETE
+  #   dtApiExistingSecret     PIA_DEPENDENCY_TRACK_API_KEY, needs VIEW_PORTFOLIO
+  #   githubExistingSecret    PIA_GITHUB_TOKEN, needs no permissions/scopes; it
+  #                           only lifts the anonymous rate limit
+  # Every key in each secret is exposed to the job as an environment variable.
+  # Defaults: <fullname>-db-cli, <fullname>-dt-cli and <fullname>-gh.
+  dbExistingSecret: ""
+  dtApiExistingSecret: ""
+  githubExistingSecret: ""
+
+  # Job tuning. backoffLimit caps retries; activeDeadlineSeconds bounds a sync
+  # that hangs on an unreachable database or DependencyTrack.
+  backoffLimit: 1
+  activeDeadlineSeconds: 600
+
+  podAnnotations: {}
+  resources: {}
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: true

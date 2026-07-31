@@ -1,0 +1,13 @@
+{{- if .Values.sync.enabled }}
+{{- $msg := "sync.enabled requires sync.projects to hold the contents of projects.yaml (pass it with --set-file sync.projects=<path>)" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pia.fullname" . }}-projects
+  labels:
+    {{- include "pia.labels" . | nindent 4 }}
+    app.kubernetes.io/component: sync
+data:
+  projects.yaml: |
+    {{- required $msg .Values.sync.projects | trimSuffix "\n" | nindent 4 }}
+{{- end }}
