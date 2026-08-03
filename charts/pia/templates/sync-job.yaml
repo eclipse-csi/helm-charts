@@ -1,0 +1,76 @@
+{{- if .Values.sync.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  # Fixed name: a sync is a one-off operation and only one run makes sense at a
+  # time. A Job spec is immutable, so the previous run has to be deleted before
+  # this one is applied.
+  name: {{ include "pia.fullname" . }}-sync
+  labels:
+    {{- include "pia.labels" . | nindent 4 }}
+    app.kubernetes.io/component: sync
+spec:
+  backoffLimit: {{ .Values.sync.backoffLimit }}
+  activeDeadlineSeconds: {{ .Values.sync.activeDeadlineSeconds }}
+  template:
+    metadata:
+      labels:
+        {{- include "pia.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: sync
+      {{- with .Values.sync.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      restartPolicy: Never
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "pia.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: sync
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ include "pia.sync.image" . | quote }}
+          imagePullPolicy: {{ .Values.sync.imagePullPolicy | default .Values.image.pullPolicy }}
+          # Override the image's default command (uvicorn) to run the sync CLI.
+          # The CLI, the app and the alembic migrations ship as one image and are
+          # version-locked to the database schema.
+          command:
+            - python
+            - -m
+            - pia.cli
+            - --verbose
+            - sync
+            - /config/projects.yaml
+            # Sync resolves project names against DependencyTrack, and must use
+            # the same instance the app uploads to.
+            - --dt-url
+            - {{ include "pia.sync.dtUrl" . | quote }}
+            {{- range .Values.sync.args }}
+            - {{ . | quote }}
+            {{- end }}
+          envFrom:
+            # The sync user writes to the database and only reads from
+            # DependencyTrack, so it gets its own credentials, separate from
+            # those of the app and of the migration job.
+            - secretRef:
+                name: {{ include "pia.sync.dbSecretName" . }}
+            - secretRef:
+                name: {{ include "pia.sync.dtApiSecretName" . }}
+            - secretRef:
+                name: {{ include "pia.sync.githubSecretName" . }}
+          volumeMounts:
+            - name: projects
+              mountPath: /config
+              readOnly: true
+          resources:
+            {{- toYaml .Values.sync.resources | nindent 12 }}
+      volumes:
+        - name: projects
+          configMap:
+            name: {{ include "pia.fullname" . }}-projects
+{{- end }}
