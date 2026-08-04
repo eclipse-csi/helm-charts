@@ -1,0 +1,32 @@
+{{- if .Values.router.enabled -}}
+{{- $fullName := include "pia.fullname" . -}}
+{{- $svcPort := .Values.service.port -}}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "pia.labels" . | nindent 4 }}
+  {{- with .Values.router.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.router.host }}
+  host: {{ .Values.router.host }}
+  {{- end }}
+  {{- if .Values.router.path }}
+  path: {{ .Values.router.path }}
+  {{- end }}
+  port:
+    targetPort: {{ .Values.router.targetPort | default "http" }}
+  {{- if and .Values.router.tls .Values.router.tls.enabled }}
+  tls:
+    termination: {{ .Values.router.tls.termination | default "edge" }}
+    insecureEdgeTerminationPolicy: {{ .Values.router.tls.insecureEdgeTerminationPolicy | default "Redirect" }}
+  {{- end }}
+  to:
+    kind: Service
+    name: {{ $fullName }}
+    weight: {{ .Values.router.weight | default 100 }}
+{{- end -}}

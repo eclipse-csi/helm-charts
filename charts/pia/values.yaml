@@ -193,6 +193,17 @@ ingress:
   #    hosts:
   #      - pia.local
 
+router:
+  # -- Enable router (OpenShift Route)
+  enabled: false
+  tls:
+    # -- Enable TLS termination on the route
+    enabled: true
+    # -- TLS termination type (edge, passthrough, reencrypt)
+    termination: edge
+    # -- Behavior for insecure (HTTP) traffic on a TLS route
+    insecureEdgeTerminationPolicy: Redirect
+
 resources:
   # Resource requests are required for HPA to function properly
   limits:
