@@ -12,6 +12,7 @@ metadata:
 spec:
   backoffLimit: {{ .Values.sync.backoffLimit }}
   activeDeadlineSeconds: {{ .Values.sync.activeDeadlineSeconds }}
+  ttlSecondsAfterFinished: {{ .Values.sync.ttlSecondsAfterFinished }}
   template:
     metadata:
       labels:

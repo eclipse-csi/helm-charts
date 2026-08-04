@@ -132,8 +132,10 @@ sync:
 
   # Job tuning. backoffLimit caps retries; activeDeadlineSeconds bounds a sync
   # that hangs on an unreachable database or DependencyTrack.
+  # ttlSecondsAfterFinished auto-deletes after a set time. Default: 1 day.
   backoffLimit: 1
   activeDeadlineSeconds: 600
+  ttlSecondsAfterFinished: 86400
 
   podAnnotations: {}
   resources: {}
