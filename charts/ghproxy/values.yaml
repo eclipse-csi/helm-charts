@@ -7,6 +7,15 @@
 #  SPDX-License-Identifier: EPL-2.0
 #  *******************************************************************************
 #
+# Overrides the chart name used in resource names and the app.kubernetes.io/name label.
+nameOverride: ""
+# Overrides the fully qualified resource name.
+fullnameOverride: ""
+# Name used in the immutable selector labels (Deployment spec.selector, Service spec.selector).
+# Defaults to the chart name. Do not change it on an existing release: the Deployment
+# selector is immutable and the Deployment would have to be deleted and recreated.
+selectorNameOverride: ""
+
 image:
   repository: us-docker.pkg.dev/k8s-infra-prow/images/ghproxy
   tag: v20251030-0e4d5be42
