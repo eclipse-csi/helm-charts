@@ -52,10 +52,18 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
-Selector labels
+Selector labels.
+Selectors are immutable on Deployments, so they are derived from
+.Values.selectorNameOverride (falling back to the chart name) instead of
+.Values.nameOverride, allowing nameOverride/fullnameOverride to change
+without recreating existing workloads.
 */}}
+{{- define "ghproxy.selectorName" -}}
+{{- default .Chart.Name .Values.selectorNameOverride | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
 {{- define "ghproxy.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "ghproxy.name" . }}
+app.kubernetes.io/name: {{ include "ghproxy.selectorName" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
