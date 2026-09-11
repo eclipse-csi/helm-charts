@@ -71,6 +71,7 @@ migration:
   activeDeadlineSeconds: 600
 
   podAnnotations: {}
+  podLabels: {}
   resources: {}
 
 ## One-off project authorization sync job
@@ -138,6 +139,7 @@ sync:
   ttlSecondsAfterFinished: 86400
 
   podAnnotations: {}
+  podLabels: {}
   resources: {}
 
 serviceAccount:
