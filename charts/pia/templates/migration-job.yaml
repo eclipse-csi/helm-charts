@@ -21,6 +21,9 @@ spec:
       labels:
         {{- include "pia.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: migrate
+        {{- with .Values.migration.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       {{- with .Values.migration.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
