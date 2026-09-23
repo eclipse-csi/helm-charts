@@ -64,6 +64,9 @@ config:
   dependencyTrackUrl: ""
   # -- A valid Dependency-Track token, no need for any permissions, just for rate limit purposes
   dependencyTrackToken: ""
+  # -- Minimum number of seconds between two evaluations of the same blueprint for an organization.
+  # Calls to /internal/check (see `policies.schedule`) within that interval skip the blueprint.
+  blueprintCheckInterval: 3600
 
 initJob:
   # -- Run a Helm post-install/post-upgrade hook Job that calls /internal/init
