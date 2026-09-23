@@ -1,8 +1,8 @@
 # otterdog
 
-![Version: 1.4.0][version-badge] <!-- x-release-please-version -->
+![Version: 1.5.0][version-badge] <!-- x-release-please-version -->
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
-![AppVersion: 1.5.0](https://img.shields.io/badge/AppVersion-1.5.0-informational?style=flat-square)
+![AppVersion: 1.6.0](https://img.shields.io/badge/AppVersion-1.6.0-informational?style=flat-square)
 
 An otterdog Web App Helm chart for Kubernetes
 
@@ -227,6 +227,7 @@ Notes:
 | config.configToken | string | `""` | A valid GitHub token, no need for any permissions, just for rate limit purposes |
 | config.dependencyTrackUrl | string | `""` | Dependency-Track URL |
 | config.dependencyTrackToken | string | `""` | A valid Dependency-Track token, no need for any permissions, just for rate limit purposes |
+| config.blueprintCheckInterval | int | `3600` | Minimum number of seconds between two evaluations of the same blueprint for an organization. Calls to /internal/check (see `policies.schedule`) within that interval skip the blueprint. |
 | initJob.enabled | bool | `true` | Run a Helm post-install/post-upgrade hook Job that calls /internal/init (refreshes org configs, policies and blueprints) after every install/upgrade. |
 | initJob.backoffLimit | int | `4` | Number of retries before the Job is considered failed |
 | policies.enabled | bool | `true` | Enable the policy check CronJob |
@@ -329,5 +330,5 @@ Notes:
 | ghproxy.enabled | bool | `true` | Enable ghproxy |
 
 <!-- x-release-please-start-version -->
-[version-badge]: https://img.shields.io/badge/Version-1.4.0%2Dinformational?style=flat-square
+[version-badge]: https://img.shields.io/badge/Version-1.5.0%2Dinformational?style=flat-square
 <!-- x-release-please-end -->
