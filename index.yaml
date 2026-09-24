@@ -88,6 +88,44 @@ entries:
   otterdog:
   - apiVersion: v2
     appVersion: 1.6.0
+    created: "2026-09-24T12:50:08.440824668Z"
+    dependencies:
+    - condition: ghproxy.enabled
+      name: ghproxy
+      repository: https://eclipse-csi.github.io/helm-charts
+      version: 0.5.1
+    - condition: mongodb.enabled
+      name: mongodb
+      repository: oci://registry-1.docker.io/cloudpirates
+      version: 0.18.14
+    - condition: valkey.enabled
+      name: valkey
+      repository: oci://registry-1.docker.io/cloudpirates
+      version: 0.25.11
+    description: An otterdog Web App Helm chart for Kubernetes
+    digest: a2a6ca6648036825ec36fdaf131f1d259dc2674b772fb45784fce49db6fcc6f1
+    home: https://github.com/eclipse-csi/otterdog
+    icon: https://raw.githubusercontent.com/eclipse-csi/.github/refs/heads/main/artwork/eclipse-otterdog/Logo%20Color%20-%20Transparent%20Bg.png
+    keywords:
+    - otterdog
+    - github
+    - configuration-as-code
+    - eclipse
+    - security
+    kubeVersion: '>=1.23.0-0'
+    maintainers:
+    - name: eclipse-csi
+      url: https://github.com/eclipse-csi/otterdog/
+    name: otterdog
+    sources:
+    - https://github.com/eclipse-csi/otterdog
+    - https://github.com/eclipse-csi/helm-charts
+    type: application
+    urls:
+    - https://github.com/eclipse-csi/helm-charts/releases/download/otterdog-1.5.2/otterdog-1.5.2.tgz
+    version: 1.5.2
+  - apiVersion: v2
+    appVersion: 1.6.0
     created: "2026-09-23T15:38:08.097948524Z"
     dependencies:
     - condition: ghproxy.enabled
@@ -796,6 +834,25 @@ entries:
   pia:
   - apiVersion: v2
     appVersion: 0.6.0
+    created: "2026-09-24T12:50:08.647001898Z"
+    description: A Helm chart for PIA (Project Identity Authority)
+    digest: 0c6a015a99d4accda76bad99e26624f07281be2539d3aabe3a147f45c9d244af
+    home: https://github.com/eclipse-csi/pia
+    keywords:
+    - pia
+    - dependency-track
+    - eclipse-csi
+    maintainers:
+    - name: eclipse-csi
+    name: pia
+    sources:
+    - https://github.com/eclipse-csi/pia
+    type: application
+    urls:
+    - https://github.com/eclipse-csi/helm-charts/releases/download/pia-0.5.1/pia-0.5.1.tgz
+    version: 0.5.1
+  - apiVersion: v2
+    appVersion: 0.6.0
     created: "2026-09-24T09:51:38.876920139Z"
     description: A Helm chart for PIA (Project Identity Authority)
     digest: 204b948cf8c836649317e54636c36ff8aa2bd9c29b75e03f2cdb2963a762442c
@@ -965,4 +1022,4 @@ entries:
     urls:
     - https://github.com/eclipse-csi/helm-charts/releases/download/pia-0.0.1/pia-0.0.1.tgz
     version: 0.0.1
-generated: "2026-09-24T09:51:38.876988366Z"
+generated: "2026-09-24T12:50:08.647189657Z"
