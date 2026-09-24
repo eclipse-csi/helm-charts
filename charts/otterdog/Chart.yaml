@@ -26,8 +26,8 @@ maintainers:
     url: https://github.com/eclipse-csi/otterdog/
 type: application
 kubeVersion: ">=1.23.0-0"
-version: 1.5.2
-appVersion: "1.6.0"
+version: 1.5.3
+appVersion: "1.6.1"
 dependencies:
   - name: ghproxy
     version: 0.5.1
@@ -35,7 +35,7 @@ dependencies:
     repository: "https://eclipse-csi.github.io/helm-charts"
     condition: ghproxy.enabled
   - name: mongodb
-    version: 0.18.14
+    version: 0.18.15
     repository: "oci://registry-1.docker.io/cloudpirates"
     condition: mongodb.enabled
   - name: valkey

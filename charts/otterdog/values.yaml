@@ -16,7 +16,7 @@ image:
   # -- Image pull policy
   pullPolicy: IfNotPresent
   # -- Image tag (defaults to the chart appVersion if empty). Kept explicit so Dependabot can track new otterdog releases; the dependabot-chart-bump workflow keeps appVersion in sync.
-  tag: "1.6.0"
+  tag: "1.6.1"
 
 # -- Image pull secrets
 imagePullSecrets: []
