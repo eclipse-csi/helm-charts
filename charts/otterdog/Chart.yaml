@@ -26,11 +26,11 @@ maintainers:
     url: https://github.com/eclipse-csi/otterdog/
 type: application
 kubeVersion: ">=1.23.0-0"
-version: 1.5.3
+version: 1.5.4
 appVersion: "1.6.1"
 dependencies:
   - name: ghproxy
-    version: 0.5.1
+    version: 0.6.0
     # repository: "file://../ghproxy"
     repository: "https://eclipse-csi.github.io/helm-charts"
     condition: ghproxy.enabled
