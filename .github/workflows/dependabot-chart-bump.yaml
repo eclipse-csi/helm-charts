@@ -4,12 +4,15 @@ name: dependabot-chart-bump
 # that chart's Chart.yaml — patch-increment `version` and align
 # `appVersion` with the new image tag. The PR ends up as a complete chart
 # release commit, which the `lint-test` (`check-version-increment: true`)
-# workflow then accepts.
+# workflow then accepts. Finally, regenerate the chart READMEs with
+# `make docs` (helm-docs) so the README check in CI passes too.
 
 on:
   pull_request_target:
     paths:
       - "charts/**/values.yaml"
+      - "charts/**/Chart.yaml"
+      - "charts/**/Chart.lock"
 
 permissions:
   contents: read
@@ -57,6 +60,14 @@ jobs:
             [ -n "$(tail -c1 "$vy")" ] && printf '\n' >> "$vy"
           done
 
+      - name: Install helm-docs
+        run: |
+          go install github.com/norwoodj/helm-docs/cmd/helm-docs@v1.14.2
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Regenerate chart READMEs
+        run: make docs
+
       - name: Commit & push
         run: |
           if git diff --quiet; then
@@ -65,6 +76,6 @@ jobs:
           fi
           git config user.name  'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add charts/*/Chart.yaml charts/*/values.yaml
-          git commit -s -m "chore: bump chart version and appVersion after dependency update"
+          git add charts/*/Chart.yaml charts/*/values.yaml charts/*/README.md
+          git commit -s -m "chore: bump chart version, appVersion and docs after dependency update"
           git push
