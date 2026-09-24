@@ -1,6 +1,6 @@
 # ghproxy
 
-![Version: 0.5.1][version-badge] <!-- x-release-please-version -->
+![Version: 0.6.0][version-badge] <!-- x-release-please-version -->
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 ![AppVersion: v20251030-0e4d5be42](https://img.shields.io/badge/AppVersion-v20251030--0e4d5be42-informational?style=flat-square)
 
@@ -8,8 +8,9 @@ A Helm chart for ghproxy
 
 ## Installation
 
-`ghproxy` is a [caching reverse proxy for the GitHub API](https://github.com/kubernetes/test-infra/tree/master/ghproxy),
-backed by Redis/Valkey. It is deployed as a stand-alone chart, or as a sub-chart
+`ghproxy` is a [caching reverse proxy for the GitHub API](https://github.com/kubernetes/test-infra/tree/master/ghproxy).
+By default it caches on a disk volume (`cacheBackend: disk`); Redis/Valkey is still
+supported (`cacheBackend: redis`). It is deployed as a stand-alone chart, or as a sub-chart
 dependency of the `otterdog` chart.
 
 Add the Eclipse CSI Helm repository:
@@ -56,7 +57,23 @@ Uninstall the release:
 helm uninstall ghproxy --namespace ghproxy
 ```
 
-> **Note:** ghproxy needs a Redis/Valkey instance to cache against. If none is deployed
+### Upgrading to 0.6.0
+
+0.6.0 switches the default cache backend from `redis` to `disk` and the cache PVC from
+`ReadWriteOnce` to `ReadWriteMany` (5Gi). Kubernetes does not allow changing the access
+modes of an existing PVC, so `helm upgrade` fails on `<release>-ghproxy-cache`. That PVC
+held no data with the `redis` backend, so it can be deleted before upgrading:
+
+```console
+kubectl -n <namespace> delete deployment <release>-ghproxy
+kubectl -n <namespace> delete pvc <release>-ghproxy-cache
+helm upgrade ...
+```
+
+Alternatively keep the previous behaviour with `cacheBackend: redis` and
+`persistence.accessModes: [ReadWriteOnce]`.
+
+> **Note:** with `cacheBackend: redis`, ghproxy needs a Redis/Valkey instance to cache against. If none is deployed
 > alongside it (e.g. when installed standalone, without the otterdog parent chart's
 > `valkey` sub-chart), set `redisAddress` explicitly. See the [Secrets](#secrets) section
 > below for how the Redis password is supplied, and the [Values](#values) section for all
@@ -64,7 +81,8 @@ helm uninstall ghproxy --namespace ghproxy
 
 ## Secrets
 
-The only secret this chart manages is the Redis/Valkey password, supplied in one of two
+The only secret this chart manages is the Redis/Valkey password (only with
+`cacheBackend: redis`), supplied in one of two
 mutually exclusive ways, controlled by `vault.enabled`.
 
 ### Non-Vault mode (`vault.enabled: false`)
@@ -112,20 +130,25 @@ Notes:
 | image.repository | string | `"us-docker.pkg.dev/k8s-infra-prow/images/ghproxy"` |  |
 | image.tag | string | `"v20251030-0e4d5be42"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
+| cacheBackend | string | `"disk"` | Cache backend used by ghproxy: `redis`, `disk` or `memory`. `redis` shares one Redis connection across all requests; under concurrent load this can panic ("slice bounds out of range [:N] with capacity 4096") and leave the proxy hanging on the affected URLs until it is restarted. `disk` (default) stores the cache under persistence.mountPath and does not have this problem. |
+| cacheSizeGB | int | `1` |  |
 | redisAddress | string | `""` |  |
 | redisUsername | string | `""` |  |
 | redisPassword | string | `"changeme"` |  |
-| legacyDisableDiskCachePartitionsByAuthHeader | bool | `false` |  |
+| legacyDisableDiskCachePartitionsByAuthHeader | bool | `true` | Disk cache only. When false, ghproxy keeps one cache directory per Authorization header, and only deletes it if the client sends X-PROW-TOKEN-EXPIRES-AT. otterdog does not send it and uses GitHub App tokens that change every hour, so the volume would fill up. Keep true: one shared cache, which is also how the redis backend behaves. |
 | throttlingTimeMs | int | `10` |  |
 | getThrottlingTimeMs | int | `10` |  |
 | logLevel | string | `"info"` |  |
 | extraArgs | list | `[]` |  |
 | service.port | int | `8888` |  |
+| healthPort | int | `8081` | Port for the /healthz and /healthz/ready endpoints (--health-port) |
+| livenessProbe | object | `{"failureThreshold":5,"httpGet":{"path":"/rate_limit","port":"http"},"initialDelaySeconds":30,"periodSeconds":30,"timeoutSeconds":10}` | Liveness probe. It sends a request through the proxy itself (GET /rate_limit, which GitHub does not count against the rate limit), so the pod is restarted when ghproxy stops answering. A probe on the health port only would not catch that. Set to null to disable. |
+| readinessProbe | object | `{"failureThreshold":3,"httpGet":{"path":"/healthz/ready","port":"health"},"periodSeconds":10,"timeoutSeconds":5}` | Readiness probe. Set to null to disable. |
 | persistence.enabled | bool | `true` |  |
 | persistence.mountPath | string | `"/cache/"` |  |
-| persistence.size | string | `"1Gi"` |  |
+| persistence.size | string | `"5Gi"` |  |
 | persistence.storageClassName | string | `""` |  |
-| persistence.accessModes | list | `["ReadWriteOnce"]` | Access modes for the PVC |
+| persistence.accessModes | list | `["ReadWriteMany"]` | Access modes for the PVC. ReadWriteMany lets the new pod mount the cache while the old one is still running during a rolling update; it needs a storage class that supports it. |
 | persistence.existingClaim | string | `""` | Use an existing PVC instead of creating one; when set, no PVC is created by this chart |
 | persistence.volumeName | string | `""` | Bind to a specific, statically-provisioned PersistentVolume by name |
 | persistence.selector | object | `{}` | Label selector to match a pre-existing PersistentVolume, e.g. matchLabels |
@@ -149,5 +172,5 @@ Notes:
 | vault.operator.refreshAfter | string | `"30s"` | How often VSO syncs the secret from Vault (e.g. 30s, 1m) |
 
 <!-- x-release-please-start-version -->
-[version-badge]: https://img.shields.io/badge/Version-0.5.1%2Dinformational?style=flat-square
+[version-badge]: https://img.shields.io/badge/Version-0.6.0%2Dinformational?style=flat-square
 <!-- x-release-please-end -->

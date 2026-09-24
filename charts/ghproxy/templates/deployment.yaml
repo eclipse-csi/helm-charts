@@ -23,10 +23,12 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      {{- $redis := eq (include "ghproxy.cacheBackend" .) "redis" }}
+      {{- $redisAuth := and $redis (or .Values.redisPassword .Values.vault.enabled) }}
       {{- if .Values.initContainers }}
       initContainers:
         {{- toYaml .Values.initContainers | nindent 8 }}
-      {{- else }}
+      {{- else if $redis }}
       initContainers:
         - name: wait-for-redis
           image: busybox:1.37
@@ -37,13 +39,20 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
+            - "--port={{ .Values.service.port }}"
+            - "--health-port={{ .Values.healthPort }}"
+          {{- if $redis }}
             - "--redis-address={{ include "ghproxy.redisAddress" . }}"
           {{- $redisUsername := include "ghproxy.redisUsername" . }}
           {{- if $redisUsername }}
             - "--redis-username={{ $redisUsername }}"
           {{- end }}
-          {{- if or .Values.redisPassword .Values.vault.enabled }}
+          {{- if $redisAuth }}
             - "--redis-secret-file=/etc/ghproxy-redis/redis-password"
+          {{- end }}
+          {{- else if eq (include "ghproxy.cacheBackend" .) "disk" }}
+            - "--cache-dir={{ .Values.persistence.mountPath }}"
+            - "--cache-sizeGB={{ .Values.cacheSizeGB }}"
           {{- end }}
           {{- if ne .Values.legacyDisableDiskCachePartitionsByAuthHeader nil }}
             - "--legacy-disable-disk-cache-partitions-by-auth-header={{ .Values.legacyDisableDiskCachePartitionsByAuthHeader }}"
@@ -63,11 +72,22 @@ spec:
           {{- end }}
           {{- end }}
           ports:
-            - containerPort: {{ .Values.service.port }}
+            - name: http
+              containerPort: {{ .Values.service.port }}
+            - name: health
+              containerPort: {{ .Values.healthPort }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: cache-volume
               mountPath: {{ .Values.persistence.mountPath }}
-            {{- if or .Values.redisPassword .Values.vault.enabled }}
+            {{- if $redisAuth }}
             - name: redis-secret
               mountPath: /etc/ghproxy-redis
               readOnly: true
@@ -81,7 +101,7 @@ spec:
           hostPath:
             path: ../approot/ghcache
           {{- end }}
-        {{- if or .Values.redisPassword .Values.vault.enabled }}
+        {{- if $redisAuth }}
         - name: redis-secret
           secret:
             secretName: {{ include "ghproxy.fullname" . }}-redis-auth

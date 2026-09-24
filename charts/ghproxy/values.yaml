@@ -21,12 +21,26 @@ image:
   tag: v20251030-0e4d5be42
   pullPolicy: IfNotPresent
 
-# Redis/Valkey address. Leave empty to auto-derive the valkey service
+# -- Cache backend used by ghproxy: `redis`, `disk` or `memory`.
+# `redis` shares one Redis connection across all requests; under concurrent load
+# this can panic ("slice bounds out of range [:N] with capacity 4096") and leave
+# the proxy hanging on the affected URLs until it is restarted.
+# `disk` (default) stores the cache under persistence.mountPath and does not have this problem.
+cacheBackend: disk
+# -- --cache-sizeGB, disk backend only. diskv uses it to cap its in-memory layer, not the
+# space used on disk: size the volume with persistence.size.
+cacheSizeGB: 1
+
+# Redis/Valkey address (only used when cacheBackend is `redis`). Leave empty to auto-derive the valkey service
 # (<release>-valkey.<namespace>.svc.cluster.local:6379).
 redisAddress: ""
 redisUsername: ""
 redisPassword: "changeme"
-legacyDisableDiskCachePartitionsByAuthHeader: false
+# -- Disk cache only. When false, ghproxy keeps one cache directory per Authorization
+# header, and only deletes it if the client sends X-PROW-TOKEN-EXPIRES-AT. otterdog does
+# not send it and uses GitHub App tokens that change every hour, so the volume would fill
+# up. Keep true: one shared cache, which is also how the redis backend behaves.
+legacyDisableDiskCachePartitionsByAuthHeader: true
 throttlingTimeMs: 10
 getThrottlingTimeMs: 10
 logLevel: info
@@ -39,14 +53,41 @@ extraArgs: []
 service:
   port: 8888
 
+# -- Port for the /healthz and /healthz/ready endpoints (--health-port)
+healthPort: 8081
+
+# -- Liveness probe. It sends a request through the proxy itself (GET /rate_limit,
+# which GitHub does not count against the rate limit), so the pod is restarted when
+# ghproxy stops answering. A probe on the health port only would not catch that.
+# Set to null to disable.
+livenessProbe:
+  httpGet:
+    path: /rate_limit
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 5
+
+# -- Readiness probe. Set to null to disable.
+readinessProbe:
+  httpGet:
+    path: /healthz/ready
+    port: health
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
 persistence:
   enabled: true
   mountPath: /cache/
-  size: 1Gi
+  size: 5Gi
   storageClassName: ""  # leave empty for default, or set explicitly
-  # -- Access modes for the PVC
+  # -- Access modes for the PVC. ReadWriteMany lets the new pod mount the cache while the
+  # old one is still running during a rolling update; it needs a storage class that
+  # supports it.
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   # -- Use an existing PVC instead of creating one; when set, no PVC is created by this chart
   existingClaim: ""
   # -- Bind to a specific, statically-provisioned PersistentVolume by name
