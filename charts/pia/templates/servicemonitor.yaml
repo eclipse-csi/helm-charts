@@ -1,0 +1,23 @@
+{{- if .Values.metrics.serviceMonitor.enabled }}
+# Scrapes /metrics through the regular Service. The ingress blackholes the
+# public /metrics path (see ingress.exposeMetrics), which does not affect
+# in-cluster scrapes. The blackhole Service does not carry pia.selectorLabels,
+# so it is not selected here.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "pia.fullname" . }}
+  labels:
+    {{- include "pia.labels" . | nindent 4 }}
+    {{- with .Values.metrics.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "pia.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: {{ .Values.metrics.serviceMonitor.interval }}
+{{- end }}

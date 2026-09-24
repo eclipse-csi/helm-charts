@@ -1,6 +1,20 @@
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "pia.fullname" . -}}
 {{- $svcPort := .Values.service.port -}}
+{{- $blackholeName := include "pia.metricsBlackholeName" . -}}
+{{- if and .Values.ingress.defaultBackend.enabled (not .Values.ingress.exposeMetrics) }}
+{{- fail "ingress.defaultBackend.enabled requires ingress.exposeMetrics=true: a default backend matches whole requests rather than paths, so it would serve the app's unauthenticated /metrics for every request that matches no rule -- and with ingress.hosts empty there are no rules at all. Disable the default backend, or set ingress.exposeMetrics=true to accept the exposure." }}
+{{- end }}
+{{- if not .Values.ingress.exposeMetrics }}
+{{- range .Values.ingress.hosts }}
+{{- range .paths }}
+{{- $path := .path | default "" }}
+{{- if or (eq $path "/metrics") (hasPrefix "/metrics/" $path) }}
+{{- fail (printf "ingress.hosts declares the path %s, which the /metrics blackhole rule already covers. The Ingress would carry two rules for it and which one wins is controller-dependent, so the app could still serve /metrics publicly. Drop the path, or set ingress.exposeMetrics=true to route it to the app deliberately." $path) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
 {{- if and .Values.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
   {{- if not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class") }}
   {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.className}}
@@ -48,6 +62,25 @@ spec:
     - host: {{ .host | quote }}
       http:
         paths:
+          {{- if not $.Values.ingress.exposeMetrics }}
+          # Public /metrics -> endpoint-less blackhole Service (503); the app
+          # serves it unauthenticated and it must stay private. Listed first,
+          # and more specific than the catch-all path, so it wins the match.
+          - path: /metrics
+            {{- if semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion }}
+            pathType: Prefix
+            {{- end }}
+            backend:
+              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              service:
+                name: {{ $blackholeName }}
+                port:
+                  number: {{ $svcPort }}
+              {{- else }}
+              serviceName: {{ $blackholeName }}
+              servicePort: {{ $svcPort }}
+              {{- end }}
+          {{- end }}
           {{- range .paths }}
           - path: {{ .path }}
             {{- if and .pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
