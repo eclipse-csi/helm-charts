@@ -48,6 +48,25 @@ jobs:
       - name: Create kind cluster
         if: steps.list-changed.outputs.changed == 'true'
         uses: helm/kind-action@0025e74a8c7512023d06dc019c617aa3cf561fde # v1.10.0
+
+      # A chart that pins `image.tag` must keep `appVersion` equal to it: the
+      # tag picks the deployed image, while `appVersion` feeds the
+      # `app.kubernetes.io/version` label and `helm list`. Charts with an empty
+      # tag fall back to `appVersion` and are skipped.
+      - name: Validate appVersion matches image.tag
+        run: |
+          status=0
+          for chart in charts/*/; do
+            tag=$(yq '.image.tag // ""' "${chart}values.yaml")
+            [ -n "$tag" ] || continue
+            app=$(yq '.appVersion // ""' "${chart}Chart.yaml")
+            if [ "$tag" != "$app" ]; then
+              echo "::error file=${chart}Chart.yaml::appVersion ($app) does not match image.tag ($tag) in ${chart}values.yaml — update both together."
+              status=1
+            fi
+          done
+          exit "$status"
+
       - name: Install helm-docs
         run: |
           go install github.com/norwoodj/helm-docs/cmd/helm-docs@v1.14.2
