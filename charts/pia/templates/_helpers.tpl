@@ -24,6 +24,32 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 
 {{/*
+Name of the endpoint-less Service the public /metrics path is routed to.
+Truncated again: the suffix is appended after pia.fullname has already spent
+its full 63-char budget.
+*/}}
+{{- define "pia.metricsBlackholeName" -}}
+{{- printf "%s-metrics-blackhole" (include "pia.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- end }}
+
+{{/*
+Labels for the /metrics blackhole Service. Deliberately not pia.labels: the
+blackhole is an ingress artifact with no pods, and pia.selectorLabels are what
+every label-based consumer selects on, so sharing them would make the
+endpoint-less Service indistinguishable from the real one.
+*/}}
+{{- define "pia.metricsBlackholeLabels" -}}
+helm.sh/chart: {{ include "pia.chart" . }}
+app.kubernetes.io/name: {{ printf "%s-metrics-blackhole" (include "pia.name" .) | trunc 63 | trimSuffix "-" }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/component: metrics-blackhole
+{{- end }}
+
+{{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "pia.chart" -}}

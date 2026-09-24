@@ -179,11 +179,22 @@ service:
 
 ingress:
   enabled: true
+
+  # Serve /metrics through the public ingress. The app serves it
+  # unauthenticated on the same port as the API, so turning this on exposes it
+  # to the internet. Left off, the ingress routes /metrics to a selector-less
+  # (endpoint-less) Service and the edge answers 503; in-cluster scrapes
+  # through the regular Service are unaffected -- see metrics.serviceMonitor.
+  exposeMetrics: false
+
   className: ""
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   defaultBackend:
+    # Requires exposeMetrics above: a default backend matches whole requests,
+    # not paths, so it would serve /metrics for any request that matches no
+    # rule -- and with hosts: [] there are no rules at all.
     enabled: false
   hosts:
     - host: pia.local
@@ -194,6 +205,15 @@ ingress:
   #  - secretName: pia-tls
   #    hosts:
   #      - pia.local
+
+metrics:
+  serviceMonitor:
+    # Requires the prometheus-operator CRDs. Scrapes /metrics through the
+    # regular Service; unaffected by ingress.exposeMetrics.
+    enabled: false
+    interval: 30s
+    # Extra labels for Prometheus discovery (e.g. release: kube-prometheus-stack).
+    labels: {}
 
 resources:
   # Resource requests are required for HPA to function properly

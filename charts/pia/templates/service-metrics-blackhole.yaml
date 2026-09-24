@@ -1,0 +1,19 @@
+{{- if and .Values.ingress.enabled (not .Values.ingress.exposeMetrics) }}
+# Selector-less Service: zero endpoints, so edge traffic routed here gets a
+# 503. The Ingress sends the public /metrics path to it — /metrics is
+# unauthenticated on the app port and must stay private (in-cluster scrapes
+# via the regular Service are unaffected).
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pia.metricsBlackholeName" . }}
+  labels:
+    {{- include "pia.metricsBlackholeLabels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
+{{- end }}
