@@ -57,7 +57,9 @@ jobs:
 
             # Dependabot occasionally strips the trailing newline from
             # values.yaml; yamllint then fails. Restore it idempotently.
-            [ -n "$(tail -c1 "$vy")" ] && printf '\n' >> "$vy"
+            if [ -n "$(tail -c1 "$vy")" ]; then
+              printf '\n' >> "$vy"
+            fi
           done
 
       - name: Install helm-docs
