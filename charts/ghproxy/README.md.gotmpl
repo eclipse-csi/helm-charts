@@ -15,8 +15,9 @@
 
 ## Installation
 
-`ghproxy` is a [caching reverse proxy for the GitHub API](https://github.com/kubernetes/test-infra/tree/master/ghproxy),
-backed by Redis/Valkey. It is deployed as a stand-alone chart, or as a sub-chart
+`ghproxy` is a [caching reverse proxy for the GitHub API](https://github.com/kubernetes/test-infra/tree/master/ghproxy).
+By default it caches on a disk volume (`cacheBackend: disk`); Redis/Valkey is still
+supported (`cacheBackend: redis`). It is deployed as a stand-alone chart, or as a sub-chart
 dependency of the `otterdog` chart.
 
 Add the Eclipse CSI Helm repository:
@@ -63,7 +64,23 @@ Uninstall the release:
 helm uninstall ghproxy --namespace ghproxy
 ```
 
-> **Note:** ghproxy needs a Redis/Valkey instance to cache against. If none is deployed
+### Upgrading to 0.6.0
+
+0.6.0 switches the default cache backend from `redis` to `disk` and the cache PVC from
+`ReadWriteOnce` to `ReadWriteMany` (5Gi). Kubernetes does not allow changing the access
+modes of an existing PVC, so `helm upgrade` fails on `<release>-ghproxy-cache`. That PVC
+held no data with the `redis` backend, so it can be deleted before upgrading:
+
+```console
+kubectl -n <namespace> delete deployment <release>-ghproxy
+kubectl -n <namespace> delete pvc <release>-ghproxy-cache
+helm upgrade ...
+```
+
+Alternatively keep the previous behaviour with `cacheBackend: redis` and
+`persistence.accessModes: [ReadWriteOnce]`.
+
+> **Note:** with `cacheBackend: redis`, ghproxy needs a Redis/Valkey instance to cache against. If none is deployed
 > alongside it (e.g. when installed standalone, without the otterdog parent chart's
 > `valkey` sub-chart), set `redisAddress` explicitly. See the [Secrets](#secrets) section
 > below for how the Redis password is supplied, and the [Values](#values) section for all
@@ -71,7 +88,8 @@ helm uninstall ghproxy --namespace ghproxy
 
 ## Secrets
 
-The only secret this chart manages is the Redis/Valkey password, supplied in one of two
+The only secret this chart manages is the Redis/Valkey password (only with
+`cacheBackend: redis`), supplied in one of two
 mutually exclusive ways, controlled by `vault.enabled`.
 
 ### Non-Vault mode (`vault.enabled: false`)

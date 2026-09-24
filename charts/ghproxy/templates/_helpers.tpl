@@ -88,6 +88,17 @@ Uses persistence.existingClaim when set, otherwise the chart-managed PVC name.
 {{- end -}}
 
 {{/*
+Cache backend (redis, disk or memory). Fails on any other value.
+*/}}
+{{- define "ghproxy.cacheBackend" -}}
+{{- $backend := .Values.cacheBackend | default "redis" -}}
+{{- if not (has $backend (list "redis" "disk" "memory")) -}}
+{{- fail (printf "cacheBackend must be one of redis, disk, memory (got %q)" $backend) -}}
+{{- end -}}
+{{- $backend -}}
+{{- end -}}
+
+{{/*
 Redis/Valkey address.
 Auto-derived from the valkey service (<release>-valkey.<namespace>) when not set.
 Override with .Values.redisAddress.
