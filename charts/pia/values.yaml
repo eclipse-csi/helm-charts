@@ -8,7 +8,7 @@ image:
   # Empty tag defaults to .Chart.appVersion. Kept explicit so Dependabot can
   # track new pia releases; the dependabot-chart-bump workflow keeps appVersion
   # in sync.
-  tag: "0.6.0"
+  tag: "0.7.0"
 
 imagePullSecrets: []
 nameOverride: ""
