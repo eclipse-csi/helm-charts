@@ -921,6 +921,25 @@ entries:
     version: 1.0.0
   pia:
   - apiVersion: v2
+    appVersion: 0.8.0
+    created: "2026-09-28T10:09:07.454864895Z"
+    description: A Helm chart for PIA (Project Identity Authority)
+    digest: 6ac1976875e9ac59d8e6b9fd3145ec4d0b1ea2caed57f1f19b5f90a8649e7136
+    home: https://github.com/eclipse-csi/pia
+    keywords:
+    - pia
+    - dependency-track
+    - eclipse-csi
+    maintainers:
+    - name: eclipse-csi
+    name: pia
+    sources:
+    - https://github.com/eclipse-csi/pia
+    type: application
+    urls:
+    - https://github.com/eclipse-csi/helm-charts/releases/download/pia-0.7.0/pia-0.7.0.tgz
+    version: 0.7.0
+  - apiVersion: v2
     appVersion: 0.7.0
     created: "2026-09-25T09:30:21.541606689Z"
     description: A Helm chart for PIA (Project Identity Authority)
@@ -1129,4 +1148,4 @@ entries:
     urls:
     - https://github.com/eclipse-csi/helm-charts/releases/download/pia-0.0.1/pia-0.0.1.tgz
     version: 0.0.1
-generated: "2026-09-25T09:30:21.541729407Z"
+generated: "2026-09-28T10:09:07.455023802Z"
