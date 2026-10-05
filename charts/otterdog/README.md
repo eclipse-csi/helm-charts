@@ -20,7 +20,7 @@ Kubernetes: `>=1.23.0-0`
 | Repository | Name | Version |
 |------------|------|---------|
 | https://eclipse-csi.github.io/helm-charts | ghproxy | 0.6.0 |
-| oci://registry-1.docker.io/cloudpirates | mongodb | 0.18.15 |
+| oci://registry-1.docker.io/cloudpirates | mongodb | 0.19.0 |
 | oci://registry-1.docker.io/cloudpirates | valkey | 0.25.11 |
 
 ## Installation
