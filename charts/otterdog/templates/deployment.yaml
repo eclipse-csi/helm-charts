@@ -120,6 +120,10 @@ spec:
                   key: dependency_track_token
             - name: BLUEPRINT_CHECK_INTERVAL
               value: {{ .Values.config.blueprintCheckInterval | quote }}
+            {{- with .Values.config.documentationUrl }}
+            - name: DOCUMENTATION_URL
+              value: {{ . | quote }}
+            {{- end }}
             - name: GITHUB_ADMIN_TEAMS
               value: {{ .Values.github.adminTeams | quote }}
             - name: WEBHOOK_ENDPOINT
