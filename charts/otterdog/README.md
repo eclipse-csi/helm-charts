@@ -1,8 +1,8 @@
 # otterdog
 
-![Version: 1.7.0][version-badge] <!-- x-release-please-version -->
+![Version: 1.7.1][version-badge] <!-- x-release-please-version -->
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
-![AppVersion: 1.7.0](https://img.shields.io/badge/AppVersion-1.7.0-informational?style=flat-square)
+![AppVersion: 1.7.1](https://img.shields.io/badge/AppVersion-1.7.1-informational?style=flat-square)
 
 An otterdog Web App Helm chart for Kubernetes
 
@@ -204,7 +204,7 @@ Notes:
 | replicaCount | int | `1` | Number of replicas to deploy |
 | image.repository | string | `"ghcr.io/eclipse-csi/otterdog"` | Image repository |
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
-| image.tag | string | `"1.7.0"` | Image tag (defaults to the chart appVersion if empty). Kept explicit so Dependabot can track new otterdog releases; the dependabot-chart-bump workflow keeps appVersion in sync. |
+| image.tag | string | `"1.7.1"` | Image tag (defaults to the chart appVersion if empty). Kept explicit so Dependabot can track new otterdog releases; the dependabot-chart-bump workflow keeps appVersion in sync. |
 | imagePullSecrets | list | `[]` | Image pull secrets |
 | nameOverride | string | `""` | Name override for the chart |
 | fullnameOverride | string | `""` | Full name override for the chart |
@@ -331,5 +331,5 @@ Notes:
 | ghproxy.enabled | bool | `true` | Enable ghproxy |
 
 <!-- x-release-please-start-version -->
-[version-badge]: https://img.shields.io/badge/Version-1.7.0%2Dinformational?style=flat-square
+[version-badge]: https://img.shields.io/badge/Version-1.7.1%2Dinformational?style=flat-square
 <!-- x-release-please-end -->
