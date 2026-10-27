@@ -35,10 +35,10 @@ dependencies:
     repository: "https://eclipse-csi.github.io/helm-charts"
     condition: ghproxy.enabled
   - name: mongodb
-    version: 0.18.15
+    version: 0.20.0
     repository: "oci://registry-1.docker.io/cloudpirates"
     condition: mongodb.enabled
   - name: valkey
-    version: 0.25.11
+    version: 0.25.13
     repository: "oci://registry-1.docker.io/cloudpirates"
     condition: valkey.enabled
