@@ -16,7 +16,7 @@ image:
   # -- Image pull policy
   pullPolicy: IfNotPresent
   # -- Image tag (defaults to the chart appVersion if empty). Kept explicit so Dependabot can track new otterdog releases; the dependabot-chart-bump workflow keeps appVersion in sync.
-  tag: "1.7.1"
+  tag: "1.8.0"
 
 # -- Image pull secrets
 imagePullSecrets: []
@@ -67,9 +67,21 @@ config:
   # -- Minimum number of seconds between two evaluations of the same blueprint for an organization.
   # Calls to /internal/check (see `policies.schedule`) within that interval skip the blueprint.
   blueprintCheckInterval: 3600
+  # -- Number of worker processes of the webapp (hypercorn). The concurrency limits below apply to each of them.
+  workers: 4
+  # -- Maximum number of installation tasks (refresh of the configuration, pull requests, policies and blueprints of
+  # an organization) running concurrently in each worker process, e.g. when calling /internal/init.
+  # Higher values speed up the refresh at the cost of memory usage and load on GitHub. Must be at least 1.
+  maxConcurrentInstallationTasks: 10
   # -- Base URL of the otterdog documentation, linked from the examples of the playground
-  # (optional — the webapp defaults to `https://otterdog.readthedocs.io/en/latest/`)
+  # (optional — the webapp defaults to `https://csi.eclipse.dev/otterdog/`)
   documentationUrl: ""
+  # -- Maximum size in bytes of a configuration posted by the playground to be validated by otterdog, larger ones
+  # being rejected (about 800 KB for an organization with 300 repositories). Must be at least 1.
+  playgroundValidationMaxSize: 5242880
+  # -- Maximum number of playground validations running concurrently in each worker process, the other ones being
+  # rejected until one completes. Must be at least 1.
+  playgroundMaxConcurrentValidations: 4
 
 initJob:
   # -- Run a Helm post-install/post-upgrade hook Job that calls /internal/init

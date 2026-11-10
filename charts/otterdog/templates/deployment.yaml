@@ -120,10 +120,18 @@ spec:
                   key: dependency_track_token
             - name: BLUEPRINT_CHECK_INTERVAL
               value: {{ .Values.config.blueprintCheckInterval | quote }}
+            - name: HYPERCORN_WORKERS
+              value: {{ .Values.config.workers | int | quote }}
+            - name: MAX_CONCURRENT_INSTALLATION_TASKS
+              value: {{ .Values.config.maxConcurrentInstallationTasks | int | quote }}
             {{- with .Values.config.documentationUrl }}
             - name: DOCUMENTATION_URL
               value: {{ . | quote }}
             {{- end }}
+            - name: PLAYGROUND_VALIDATION_MAX_SIZE
+              value: {{ .Values.config.playgroundValidationMaxSize | int | quote }}
+            - name: PLAYGROUND_MAX_CONCURRENT_VALIDATIONS
+              value: {{ .Values.config.playgroundMaxConcurrentValidations | int | quote }}
             - name: GITHUB_ADMIN_TEAMS
               value: {{ .Values.github.adminTeams | quote }}
             - name: WEBHOOK_ENDPOINT

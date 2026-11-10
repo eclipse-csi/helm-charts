@@ -1,8 +1,8 @@
 # otterdog
 
-![Version: 1.7.1][version-badge] <!-- x-release-please-version -->
+![Version: 1.8.0][version-badge] <!-- x-release-please-version -->
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
-![AppVersion: 1.7.1](https://img.shields.io/badge/AppVersion-1.7.1-informational?style=flat-square)
+![AppVersion: 1.8.0](https://img.shields.io/badge/AppVersion-1.8.0-informational?style=flat-square)
 
 An otterdog Web App Helm chart for Kubernetes
 
@@ -204,7 +204,7 @@ Notes:
 | replicaCount | int | `1` | Number of replicas to deploy |
 | image.repository | string | `"ghcr.io/eclipse-csi/otterdog"` | Image repository |
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
-| image.tag | string | `"1.7.1"` | Image tag (defaults to the chart appVersion if empty). Kept explicit so Dependabot can track new otterdog releases; the dependabot-chart-bump workflow keeps appVersion in sync. |
+| image.tag | string | `"1.8.0"` | Image tag (defaults to the chart appVersion if empty). Kept explicit so Dependabot can track new otterdog releases; the dependabot-chart-bump workflow keeps appVersion in sync. |
 | imagePullSecrets | list | `[]` | Image pull secrets |
 | nameOverride | string | `""` | Name override for the chart |
 | fullnameOverride | string | `""` | Full name override for the chart |
@@ -228,7 +228,11 @@ Notes:
 | config.dependencyTrackUrl | string | `""` | Dependency-Track URL |
 | config.dependencyTrackToken | string | `""` | A valid Dependency-Track token, no need for any permissions, just for rate limit purposes |
 | config.blueprintCheckInterval | int | `3600` | Minimum number of seconds between two evaluations of the same blueprint for an organization. Calls to /internal/check (see `policies.schedule`) within that interval skip the blueprint. |
-| config.documentationUrl | string | `""` | Base URL of the otterdog documentation, linked from the examples of the playground (optional — the webapp defaults to `https://otterdog.readthedocs.io/en/latest/`) |
+| config.workers | int | `4` | Number of worker processes of the webapp (hypercorn). The concurrency limits below apply to each of them. |
+| config.maxConcurrentInstallationTasks | int | `10` | Maximum number of installation tasks (refresh of the configuration, pull requests, policies and blueprints of an organization) running concurrently in each worker process, e.g. when calling /internal/init. Higher values speed up the refresh at the cost of memory usage and load on GitHub. Must be at least 1. |
+| config.documentationUrl | string | `""` | Base URL of the otterdog documentation, linked from the examples of the playground (optional — the webapp defaults to `https://csi.eclipse.dev/otterdog/`) |
+| config.playgroundValidationMaxSize | int | `5242880` | Maximum size in bytes of a configuration posted by the playground to be validated by otterdog, larger ones being rejected (about 800 KB for an organization with 300 repositories). Must be at least 1. |
+| config.playgroundMaxConcurrentValidations | int | `4` | Maximum number of playground validations running concurrently in each worker process, the other ones being rejected until one completes. Must be at least 1. |
 | initJob.enabled | bool | `true` | Run a Helm post-install/post-upgrade hook Job that calls /internal/init (refreshes org configs, policies and blueprints) after every install/upgrade. |
 | initJob.backoffLimit | int | `4` | Number of retries before the Job is considered failed |
 | policies.enabled | bool | `true` | Enable the policy check CronJob |
@@ -331,5 +335,5 @@ Notes:
 | ghproxy.enabled | bool | `true` | Enable ghproxy |
 
 <!-- x-release-please-start-version -->
-[version-badge]: https://img.shields.io/badge/Version-1.7.1%2Dinformational?style=flat-square
+[version-badge]: https://img.shields.io/badge/Version-1.8.0%2Dinformational?style=flat-square
 <!-- x-release-please-end -->
