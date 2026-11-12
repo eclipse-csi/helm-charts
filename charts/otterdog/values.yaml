@@ -70,6 +70,12 @@ config:
   # -- Base URL of the otterdog documentation, linked from the examples of the playground
   # (optional — the webapp defaults to `https://otterdog.readthedocs.io/en/latest/`)
   documentationUrl: ""
+  # -- (int) Maximum number of REST requests sent concurrently to GitHub by the sync check of a pull request
+  # (`CHECK_SYNC_MAX_CONCURRENT_REQUESTS`). Higher values speed up the check of organizations with many
+  # repositories, at the risk of hitting the secondary rate limits of GitHub. Ignored by the webapp
+  # before the release that introduces this setting.
+  # @default -- unset, the webapp defaults to 20
+  checkSyncMaxConcurrentRequests: null
 
 initJob:
   # -- Run a Helm post-install/post-upgrade hook Job that calls /internal/init

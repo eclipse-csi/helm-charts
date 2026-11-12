@@ -124,6 +124,10 @@ spec:
             - name: DOCUMENTATION_URL
               value: {{ . | quote }}
             {{- end }}
+            {{- with .Values.config.checkSyncMaxConcurrentRequests }}
+            - name: CHECK_SYNC_MAX_CONCURRENT_REQUESTS
+              value: {{ . | quote }}
+            {{- end }}
             - name: GITHUB_ADMIN_TEAMS
               value: {{ .Values.github.adminTeams | quote }}
             - name: WEBHOOK_ENDPOINT

@@ -1,6 +1,6 @@
 # otterdog
 
-![Version: 1.7.1][version-badge] <!-- x-release-please-version -->
+![Version: 1.7.2][version-badge] <!-- x-release-please-version -->
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 ![AppVersion: 1.7.1](https://img.shields.io/badge/AppVersion-1.7.1-informational?style=flat-square)
 
@@ -229,6 +229,7 @@ Notes:
 | config.dependencyTrackToken | string | `""` | A valid Dependency-Track token, no need for any permissions, just for rate limit purposes |
 | config.blueprintCheckInterval | int | `3600` | Minimum number of seconds between two evaluations of the same blueprint for an organization. Calls to /internal/check (see `policies.schedule`) within that interval skip the blueprint. |
 | config.documentationUrl | string | `""` | Base URL of the otterdog documentation, linked from the examples of the playground (optional — the webapp defaults to `https://otterdog.readthedocs.io/en/latest/`) |
+| config.checkSyncMaxConcurrentRequests | int | unset, the webapp defaults to 20 | Maximum number of REST requests sent concurrently to GitHub by the sync check of a pull request (`CHECK_SYNC_MAX_CONCURRENT_REQUESTS`). Higher values speed up the check of organizations with many repositories, at the risk of hitting the secondary rate limits of GitHub. Ignored by the webapp before the release that introduces this setting. |
 | initJob.enabled | bool | `true` | Run a Helm post-install/post-upgrade hook Job that calls /internal/init (refreshes org configs, policies and blueprints) after every install/upgrade. |
 | initJob.backoffLimit | int | `4` | Number of retries before the Job is considered failed |
 | policies.enabled | bool | `true` | Enable the policy check CronJob |
@@ -331,5 +332,5 @@ Notes:
 | ghproxy.enabled | bool | `true` | Enable ghproxy |
 
 <!-- x-release-please-start-version -->
-[version-badge]: https://img.shields.io/badge/Version-1.7.1%2Dinformational?style=flat-square
+[version-badge]: https://img.shields.io/badge/Version-1.7.2%2Dinformational?style=flat-square
 <!-- x-release-please-end -->
